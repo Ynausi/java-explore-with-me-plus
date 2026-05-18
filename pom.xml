@@ -11,8 +11,12 @@
 	</parent>
 
 	<name>Explore With Me</name>
+    <modules>
+        <module>stat</module>
+        <module>main-service</module>
+    </modules>
 
-	<groupId>ru.practicum</groupId>
+    <groupId>ru.practicum</groupId>
 	<artifactId>explore-with-me</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -21,6 +25,37 @@
 		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+            <dependency>
+                <groupId>ru.practicum</groupId>
+                <artifactId>stat-dto</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ru.practicum</groupId>
+                <artifactId>stat-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>ru.practicum</groupId>
+                <artifactId>stat-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.46</version>
+            </dependency>
+
+        </dependencies>
+
+    </dependencyManagement>
 
 	<build>
 		<pluginManagement>
