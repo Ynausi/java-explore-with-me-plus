@@ -12,7 +12,7 @@
 
 	<name>Explore With Me</name>
     <modules>
-        <module>stat</module>
+        <module>stats</module>
         <module>main-service</module>
     </modules>
 
@@ -31,26 +31,26 @@
         <dependencies>
             <dependency>
                 <groupId>ru.practicum</groupId>
-                <artifactId>stat-dto</artifactId>
+                <artifactId>stats-dto</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>ru.practicum</groupId>
-                <artifactId>stat-client</artifactId>
+                <artifactId>stats-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>ru.practicum</groupId>
-                <artifactId>stat-server</artifactId>
+                <artifactId>stats-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.46</version>
+                <version>1.18.32</version>
             </dependency>
 
         </dependencies>
