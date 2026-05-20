@@ -20,8 +20,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: main
     depends_on:
       - stats-db
+    restart: on-failure
 
-  main-service:
+  ewm-service:
     build: ./main-service
     container_name: main-service
     ports:
@@ -34,3 +35,4 @@ services:
     depends_on:
       - stats-db
       - stats-server
+    restart: on-failure
