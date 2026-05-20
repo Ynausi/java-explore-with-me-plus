@@ -43,9 +43,7 @@ public class StatsClient {
                     uriBuilder.queryParam("unique", unique);
 
                     if (uris != null && !uris.isEmpty()) {
-                        for (String uri : uris) {
-                            uriBuilder.queryParam("uris", uri);
-                        }
+                        uriBuilder.queryParam("uris", uris.toArray());
                     }
                     return uriBuilder.build();
                 })
