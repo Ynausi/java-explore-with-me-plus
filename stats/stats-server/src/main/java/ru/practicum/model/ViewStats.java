@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Stats",schema = "public")
+@Table(name = "Stats", schema = "public")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,10 +17,10 @@ public class ViewStats {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name="app",nullable = false)
+    @Column(name = "app", nullable = false)
     private String app;
-    @Column(name="uri",nullable = false)
+    @Column(name = "uri", nullable = false)
     private String uri;
-    @Column(name="hits",nullable = false)
+    @Column(name = "hits", nullable = false)
     private Integer hits;
 }
