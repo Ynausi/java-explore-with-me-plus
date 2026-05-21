@@ -23,9 +23,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<StatsViewDto> getStats(LocalDateTime start,
-                              LocalDateTime end,
-                              List<String> uris,
-                              Boolean unique) {
+                                       LocalDateTime end,
+                                       List<String> uris,
+                                       Boolean unique) {
         List<Hit> hits;
 
         if (uris != null && !uris.isEmpty()) {
