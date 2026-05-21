@@ -1,7 +1,5 @@
 package ru.practicum.service;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,7 +8,6 @@ import ru.practicum.dto.HitRequestDto;
 import ru.practicum.dto.StatsViewDto;
 import ru.practicum.mapper.HitMapper;
 import ru.practicum.model.Hit;
-import ru.practicum.model.QHit;
 import ru.practicum.storage.HitRepository;
 
 import java.time.LocalDateTime;
@@ -23,22 +20,19 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class StatsServiceImpl implements StatsService {
     private final HitRepository hitRepository;
-    private final JPAQueryFactory queryFactory;
-
-    QHit qHit = QHit.hit;
 
     @Override
     public List<StatsViewDto> getStats(LocalDateTime start,
                               LocalDateTime end,
                               List<String> uris,
                               Boolean unique) {
-        BooleanExpression filter = QHit.hit.timestamp.after(start).and(QHit.hit.timestamp.before(end));
+        List<Hit> hits;
 
         if (uris != null && !uris.isEmpty()) {
-            filter = filter.and(QHit.hit.uri.in(uris));
+            hits = hitRepository.findByTimestampBetweenAndUriIn(start, end, uris);
+        } else {
+            hits = hitRepository.findByTimestampBetween(start, end);
         }
-
-        List<Hit> hits = queryFactory.select(qHit).from(qHit).where(filter).fetch();
 
         Map<String, ArrayList<Hit>> appsAndHitsMap = new HashMap<>();
 
