@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import ru.practicum.dto.HitRequestDto;
-import ru.practicum.dto.ViewStatsResponseDto;
+import ru.practicum.dto.StatsViewDto;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class StatsClient {
                 .toBodilessEntity();
     }
 
-    public List<ViewStatsResponseDto> getStats(String start, String end, List<String> uris, boolean unique) {
+    public List<StatsViewDto> getStats(String start, String end, List<String> uris, boolean unique) {
         return restClient.get()
                 .uri(uriBuilder -> {
                     uriBuilder.path("/stats");
