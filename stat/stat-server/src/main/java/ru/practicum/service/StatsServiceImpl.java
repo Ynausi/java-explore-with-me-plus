@@ -34,13 +34,6 @@ public class StatsServiceImpl implements StatsService {
             hits = hitRepository.findByTimestampBetween(start, end);
         }
 
-        Map<String, ArrayList<Hit>> appsAndHitsMap = new HashMap<>();
-
-        for (Hit hit : hits) {
-            appsAndHitsMap.computeIfAbsent(hit.getApp(), k -> new ArrayList<>());
-            appsAndHitsMap.get(hit.getApp()).add(hit);
-        }
-
         List<StatsViewDto> statsViewDtos = new ArrayList<>();
 
         Map<String, List<Hit>> appHits = hits.stream()
