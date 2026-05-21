@@ -6,15 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "hits", schema = "public")
+@Table(name = "Stats", schema = "public")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Hit {
+public class ViewStats {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -22,8 +21,6 @@ public class Hit {
     private String app;
     @Column(name = "uri", nullable = false)
     private String uri;
-    @Column(name = "ip", nullable = false)
-    private String ip;
-    @Column(name = "timestamp", nullable = false)
-    private LocalDateTime timestamp;
+    @Column(name = "hits", nullable = false)
+    private Integer hits;
 }
