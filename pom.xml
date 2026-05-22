@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -11,12 +11,12 @@
 	</parent>
 
 	<name>Explore With Me</name>
-    <modules>
-        <module>stat</module>
-        <module>main-service</module>
-    </modules>
+	<modules>
+		<module>stat</module>
+		<module>main-service</module>
+	</modules>
 
-    <groupId>ru.practicum</groupId>
+	<groupId>ru.practicum</groupId>
 	<artifactId>explore-with-me</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -26,36 +26,36 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
-    <dependencyManagement>
+	<dependencyManagement>
 
-        <dependencies>
-            <dependency>
-                <groupId>ru.practicum</groupId>
-                <artifactId>stat-dto</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+		<dependencies>
+			<dependency>
+				<groupId>ru.practicum</groupId>
+				<artifactId>stat-dto</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
-            <dependency>
-                <groupId>ru.practicum</groupId>
-                <artifactId>stat-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>ru.practicum</groupId>
+				<artifactId>stat-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
-            <dependency>
-                <groupId>ru.practicum</groupId>
-                <artifactId>stat-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+			<dependency>
+				<groupId>ru.practicum</groupId>
+				<artifactId>stat-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.18.32</version>
-            </dependency>
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.32</version>
+			</dependency>
 
-        </dependencies>
+		</dependencies>
 
-    </dependencyManagement>
+	</dependencyManagement>
 
 	<build>
 		<resources>
