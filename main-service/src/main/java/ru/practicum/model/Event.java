@@ -3,7 +3,6 @@ package ru.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +39,11 @@ public class Event {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-    
+
     @ManyToOne
-    @JoinColumn(name = "categories_id",nullable = false)
-    private Category category;  
-    
+    @JoinColumn(name = "categories_id", nullable = false)
+    private Category category;
+
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 

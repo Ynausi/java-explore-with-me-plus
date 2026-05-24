@@ -24,7 +24,7 @@ public class Compilation {
     @Column(name = "pinned",nullable = false)
     private Boolean pinned;
 
-    @Column(name = "title",nullable = false,length = 255)
+    @Column(name = "title", nullable = false, length = 255)
     private String title;
 
     @ManyToMany

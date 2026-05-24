@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
-@Table(name = "сategories", schema = "public")
+@Table(name = "categories", schema = "public")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,7 +18,7 @@ public class Category {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    @Size(min =1,max =50)
-    @Column(name = "name",nullable = false,length = 50)
+    @Size(min = 1, max = 50)
+    @Column(name = "name",nullable = false, length = 50)
     private String name;
 }
