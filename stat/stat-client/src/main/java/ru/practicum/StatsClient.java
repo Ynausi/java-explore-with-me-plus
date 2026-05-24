@@ -16,7 +16,7 @@ public class StatsClient {
     private final RestClient restClient;
 
     @Autowired
-    public StatsClient(RestClient.Builder builder, @Value("${client.url}") String serverUrl) {
+    public StatsClient(RestClient.Builder builder, @Value("${stats-server.url}") String serverUrl) {
         this.restClient = builder
                 .baseUrl(serverUrl)
                 .defaultHeaders(headers -> {
