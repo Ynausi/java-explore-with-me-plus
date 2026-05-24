@@ -18,6 +18,7 @@ public class Compilation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
 
     @Column(name = "pinned",nullable = false)
