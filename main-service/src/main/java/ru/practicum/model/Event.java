@@ -40,7 +40,11 @@ public class Event {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
-
+    
+    @ManyToOne
+    @JoinColumn(name = "categories_id",nullable = false)
+    private Category category;  
+    
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
