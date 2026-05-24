@@ -1,0 +1,74 @@
+package ru.practicum.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "events")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class Event {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    private Long id;
+
+    @Column(name = "annotation", nullable = false)
+    private String annotation;
+
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @ManyToMany
+    @JoinTable(
+            name = "",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+
+    )
+    private List<User> userRequests = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Column(name = "event_date", nullable = false)
+    private LocalDate eventDate;
+
+    @Column(name = "paid")
+    private Boolean paid;
+
+    @Column(name = "lat", nullable = false)
+    private Double lat;
+
+    @Column(name = "lon", nullable = false)
+    private Double lon;
+
+    @Column(name = "participant_limit")
+    private Integer participantLimit;
+
+    @Column(name = "request_moderation")
+    private Boolean requestModeration;
+
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EventState eventState;
+
+    @Column(name = "created_on", nullable = false)
+    private LocalDateTime createdOn;
+
+    @Column(name = "published_on", nullable = false)
+    private LocalDateTime publishedOn;
+}
