@@ -42,7 +42,7 @@ public class Event {
     private User user;
 
     @Column(name = "event_date", nullable = false)
-    private LocalDate eventDate;
+    private LocalDateTime eventDate;
 
     @Column(name = "paid")
     private Boolean paid;
