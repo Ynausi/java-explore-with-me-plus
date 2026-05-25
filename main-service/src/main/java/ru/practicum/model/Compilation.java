@@ -21,7 +21,7 @@ public class Compilation {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    @Column(name = "pinned",nullable = false)
+    @Column(name = "pinned", nullable = false)
     private Boolean pinned;
 
     @Column(name = "title", nullable = false, length = 255)

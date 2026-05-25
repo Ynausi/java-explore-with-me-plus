@@ -19,6 +19,6 @@ public class Category {
     private Integer id;
 
     @Size(min = 1, max = 50)
-    @Column(name = "name",nullable = false, length = 50)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 }
