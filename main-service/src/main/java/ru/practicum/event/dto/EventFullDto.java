@@ -14,26 +14,29 @@ import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
 @AllArgsConstructor
 public class EventFullDto {
 
-    private Long id;
-    private String title;
     private String annotation;
-    private String description;
     private CategoryDto category;
     private Integer confirmedRequests;
-    private UserShortDto initiator;
-    private LocationDto location;
-    private Boolean paid;
-    private Integer participantLimit;
-    private Boolean requestModeration;
-    private EventState state;
-    private Long views;
 
     @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime createdOn;
 
+    private String description;
+
     @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime eventDate;
 
+    private Long id;
+    private UserShortDto initiator;
+    private LocationDto location;
+    private Boolean paid;
+    private Integer participantLimit;
+
     @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime publishedOn;
+
+    private Boolean requestModeration;
+    private EventState state;
+    private String title;
+    private Long views;
 }
