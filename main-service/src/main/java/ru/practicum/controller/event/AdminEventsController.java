@@ -1,4 +1,4 @@
-package ru.practicum.event.controller;
+package ru.practicum.controller.event;
 
 import org.springframework.web.bind.annotation.RestController;
 

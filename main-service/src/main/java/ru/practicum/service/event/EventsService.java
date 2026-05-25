@@ -1,4 +1,4 @@
-package ru.practicum.event.service;
+package ru.practicum.service.event;
 
 public interface EventsService {
 }

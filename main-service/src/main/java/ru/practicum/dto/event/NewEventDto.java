@@ -1,6 +1,11 @@
-package ru.practicum.event.dto;
+package ru.practicum.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,31 +17,35 @@ import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventFullDto {
+public class NewEventDto {
 
+    @NotBlank
+    @Size(min = 20, max = 2000)
     private String annotation;
-    private CategoryDto category;
-    private Integer confirmedRequests;
 
-    @JsonFormat(pattern = DATE_TIME_FORMAT)
-    private LocalDateTime createdOn;
+    @NotNull
+    private Long category;
 
+    @NotBlank
+    @Size(min = 20, max = 7000)
     private String description;
 
+    @NotNull
     @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime eventDate;
 
-    private Long id;
-    private UserShortDto initiator;
+    @NotNull
+    @Valid
     private LocationDto location;
+
     private Boolean paid;
+
+    @PositiveOrZero
     private Integer participantLimit;
 
-    @JsonFormat(pattern = DATE_TIME_FORMAT)
-    private LocalDateTime publishedOn;
+    @NotBlank
+    @Size(min = 3, max = 120)
 
     private Boolean requestModeration;
-    private EventState state;
     private String title;
-    private Long views;
 }
