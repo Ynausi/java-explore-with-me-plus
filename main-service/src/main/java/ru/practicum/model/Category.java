@@ -1,7 +1,6 @@
 package ru.practicum.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -16,9 +15,8 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Integer id;
+    private Long id;
 
-    @Size(min = 1, max = 50)
-    @Column(name = "name",nullable = false, length = 50)
+    @Column(name = "name",nullable = false, unique = true, length = 50)
     private String name;
 }
