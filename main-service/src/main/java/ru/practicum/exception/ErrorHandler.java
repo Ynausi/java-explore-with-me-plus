@@ -75,13 +75,13 @@ public class ErrorHandler {
             errors.add(causeError);
         }
 
-        return new ApiError(
-                status,
-                e.getMessage(),
-                reason != null ? reason : "Unknown reason error",
-                LocalDateTime.now(),
-                errors
-        );
+        return ApiError.builder()
+                .status(status)
+                .message(e.getMessage())
+                .reason(reason != null ? reason : "Unknown reason error")
+                .timestamp(LocalDateTime.now())
+                .errors(errors)
+                .build();
     }
 
     private List<String> getStackTrace(Throwable e) {
