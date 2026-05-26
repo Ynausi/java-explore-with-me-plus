@@ -1,0 +1,33 @@
+package ru.practicum.controller.category;
+
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.category.CategoryFilter;
+import ru.practicum.dto.category.CategoryResponse;
+import ru.practicum.service.category.CategoryService;
+
+import java.util.Collection;
+
+@RestController
+@RequestMapping("/categories")
+@AllArgsConstructor
+public class PublicCategoryController {
+    private final CategoryService categoryService;
+
+    @GetMapping
+    public ResponseEntity<Collection<CategoryResponse>> getNeededCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                                            @RequestParam(defaultValue = "10") @Positive Integer size) {
+        CategoryFilter categoryFilter = new CategoryFilter(from,size);
+        return ResponseEntity.ok()
+                .body(categoryService.getNeeded(categoryFilter));
+    }
+
+    @GetMapping("/{catId}")
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable("catId") Long catId) {
+        return ResponseEntity.ok().body(categoryService.findCategoryById(catId));
+    }
+
+}
