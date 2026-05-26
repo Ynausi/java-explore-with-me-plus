@@ -2,7 +2,7 @@ package ru.practicum.exception;
 
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,9 +31,9 @@ public class ErrorHandler {
         return handleException(e, HttpStatus.BAD_REQUEST, "Incorrectly made request.");
     }
 
-    @ExceptionHandler(DataAccessException.class)
+    @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleDataAccess(DataAccessException e) {
+    public ApiError handleDataAccess(DataIntegrityViolationException  e) {
         return handleException(e, HttpStatus.CONFLICT, "Integrity constraint has been violated.");
     }
 
