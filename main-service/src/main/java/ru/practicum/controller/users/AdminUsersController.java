@@ -26,13 +26,14 @@ public class AdminUsersController {
     @GetMapping
     public ResponseEntity<List<UserDto>> getUser(
             @RequestParam(required = false) List<Long> ids,
-            @RequestParam(required = false, defaultValue = "0") Integer from,
-            @RequestParam(required = false, defaultValue = "10") Integer size) {
+            @RequestParam(defaultValue = "0") Integer from,
+            @RequestParam(defaultValue = "10") Integer size) {
         return ResponseEntity.ok(userService.getUsers(ids, from, size));
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 }

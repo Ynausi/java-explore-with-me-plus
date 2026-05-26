@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.users.NewUserRequest;
 import ru.practicum.dto.users.UserDto;
+import ru.practicum.exception.UserNotFoundException;
 import ru.practicum.mapper.users.UserMapper;
 import ru.practicum.model.QUser;
 import ru.practicum.model.User;
@@ -64,6 +65,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long userId) {
+        usersRepository.findById(userId).orElseThrow(() ->
+                new UserNotFoundException(String.format("User with id=%s was not found", userId)));
+
         usersRepository.deleteById(userId);
     }
 }
