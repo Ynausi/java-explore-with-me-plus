@@ -28,9 +28,6 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     private final EventRepository eventRepository;
     private final ParticipationRequestMapper mapper;
 
-    private static final List<EventState> UNPUBLISHED_EVENT_STATES =
-            List.of(EventState.PENDING, EventState.CANCELED);
-
     @Override
     @Transactional
     public ParticipationRequestDto addParticipationRequest(Long userId, Long eventId) {
@@ -87,7 +84,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                     "Event initiator cannot request participation in their own event"
             );
         }
-        if (UNPUBLISHED_EVENT_STATES.contains(event.getEventState())) {
+        if (!EventState.PUBLISHED.equals(event.getEventState())) {
             throw new ParticipationRequestException(
                     "Cannot participate in unpublished event. Current status: " + event.getEventState()
             );
