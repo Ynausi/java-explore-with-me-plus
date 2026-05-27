@@ -1,11 +1,11 @@
 package ru.practicum.service.users;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.users.NewUserRequest;
 import ru.practicum.dto.users.UserDto;
-import ru.practicum.exception.EntityNotFoundException;
 import ru.practicum.mapper.users.UserMapper;
 import ru.practicum.model.User;
 import ru.practicum.repository.users.UsersRepository;
