@@ -54,15 +54,24 @@ public class EventServiceImpl implements EventService {
         List<Long> eventIds = events.stream().map(Event::getId).toList();
 
         Map<Long, Long> viewsMap = getViewsMap(eventIds);
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(eventIds);
 
-        // ...
+        return events.stream()
+                .map(event -> {
+                    EventShortDto shortDto = eventMapper.toEventShortDto(event);
+                    shortDto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+                    shortDto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
+                    return shortDto;
+                })
+                .toList();
     }
 
     @Override
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         User initiator = getUserByIdOrThrow(userId);
+        LocalDateTime now = LocalDateTime.now();
 
-        if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+        if (newEventDto.getEventDate().isBefore(now.plusHours(2))) {
             throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
         }
 
@@ -77,7 +86,7 @@ public class EventServiceImpl implements EventService {
         if (newEvent.getRequestModeration() == null) newEvent.setRequestModeration(true);
 
         newEvent.setEventState(EventState.PENDING);
-        newEvent.setCreatedOn(LocalDateTime.now());
+        newEvent.setCreatedOn(now);
 
         Event createdEvent = eventRepository.save(newEvent);
 
@@ -125,6 +134,20 @@ public class EventServiceImpl implements EventService {
                             return Long.parseLong(uri.substring(uri.lastIndexOf("/") + 1));
                         },
                         StatsViewDto::getHits,
+                        (existing, replacement) -> existing
+                ));
+    }
+
+    private Map<Long, Long> getConfirmedRequestsMap(List<Long> eventIds) {
+        if (eventIds == null || eventIds.isEmpty()) return Collections.emptyMap();
+
+        // Данный метод отсутствует в репо, так как ребята пока не реализовали
+        List<Object[]> result = requestRepository.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED);
+
+        return result.stream()
+                .collect(Collectors.toMap(
+                        objects -> (Long) objects[0],
+                        objects -> (Long) objects[1],
                         (existing, replacement) -> existing
                 ));
     }
