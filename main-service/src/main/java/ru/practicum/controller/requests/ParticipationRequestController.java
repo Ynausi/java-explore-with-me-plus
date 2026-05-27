@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.requests.ParticipationRequestDto;
+import ru.practicum.service.requests.ParticipationRequestService;
 
 import java.util.List;
 
@@ -11,6 +12,8 @@ import java.util.List;
 @RequestMapping
 @RequiredArgsConstructor
 public class ParticipationRequestController {
+
+    private final ParticipationRequestService requestService;
 
     @PostMapping("/users/{userId}/requests")
     public ResponseEntity<ParticipationRequestDto> addParticipationRequest(

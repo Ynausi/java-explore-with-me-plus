@@ -10,7 +10,9 @@ import ru.practicum.dto.category.CategoryResponse;
 import ru.practicum.exception.CategoryDeleteConflictException;
 import ru.practicum.mapper.category.CategoryMapper;
 import ru.practicum.model.Category;
-import ru.practicum.repository.category.CategoryRepository;
+import ru.practicum.repository.CategoryRepository;
+import ru.practicum.repository.EventRepository;
+
 import java.util.Collection;
 
 @Service
@@ -45,8 +47,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(catId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Category with id=%s was not found",catId)));
 
-        if (eventRepository.existsByCategory_Id(catId)) {
-            throw  new CategoryDeleteConflictException(String.format("Cannot delete category, because some events have it"));
+        if (eventRepository.existsByCategoryId(catId)) {
+            throw  new CategoryDeleteConflictException("Cannot delete category, because some events have it");
         }
         categoryRepository.delete(category);
     }
