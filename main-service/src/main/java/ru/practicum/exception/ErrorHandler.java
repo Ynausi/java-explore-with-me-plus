@@ -37,7 +37,7 @@ public class ErrorHandler {
         return handleException(e, HttpStatus.CONFLICT, "Integrity constraint has been violated.");
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFound(RuntimeException e) {
         return handleException(e, HttpStatus.NOT_FOUND, "The required object was not found.");
