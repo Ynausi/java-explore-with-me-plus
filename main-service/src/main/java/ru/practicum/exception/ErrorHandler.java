@@ -37,27 +37,15 @@ public class ErrorHandler {
         return handleException(e, HttpStatus.CONFLICT, "Integrity constraint has been violated.");
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleNotFound(RuntimeException e) {
-        return handleException(e, HttpStatus.NOT_FOUND, "The required object was not found.");
-    }
-
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleThrowable(final Throwable e) {
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR, null);
     }
 
-    @ExceptionHandler(CategoryNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleCategoryNotFound(RuntimeException e) {
-        return handleException(e,HttpStatus.NOT_FOUND,"The required object was not found.");
-    }
-
-    @ExceptionHandler(CategoryExistByName.class)
+    @ExceptionHandler(CategoryDeleteConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleCategoryExistByName(RuntimeException e) {
+    public ApiError hadleCategoryDeleteConflict(RuntimeException e) {
         return handleException(e,HttpStatus.CONFLICT,"Integrity constraint has been violated.");
     }
 
