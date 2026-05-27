@@ -17,11 +17,10 @@ import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
 @AllArgsConstructor
 public class UpdateEventUserRequest {
 
-    @Size(min = 3, max = 120)
-    private String title;
-
     @Size(min = 20, max = 2000)
     private String annotation;
+
+    private Long category;
 
     @Size(min = 20, max = 7000)
     private String description;
@@ -32,11 +31,15 @@ public class UpdateEventUserRequest {
     @Valid
     private LocationDto location;
 
+    private Boolean paid;
+
     @PositiveOrZero
     private Integer participantLimit;
 
-    private Long category;
-    private Boolean paid;
     private Boolean requestModeration;
+
     private UserStateAction stateAction;
+
+    @Size(min = 3, max = 120)
+    private String title;
 }

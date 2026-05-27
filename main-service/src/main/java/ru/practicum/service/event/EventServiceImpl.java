@@ -7,9 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.StatsViewDto;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.dto.event.NewEventDto;
+import ru.practicum.dto.event.*;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.event.EventMapper;
@@ -40,7 +38,6 @@ public class EventServiceImpl implements EventService {
     private final UsersRepository usersRepository;
     private final StatsClient statsClient;
     private final EventMapper eventMapper;
-
 
     @Override
     public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {
@@ -109,6 +106,61 @@ public class EventServiceImpl implements EventService {
         eventFullDto.setViews(viewsMap.getOrDefault(eventId, 0L));
         eventFullDto.setConfirmedRequests(confirmedRequests);
         return eventFullDto;
+    }
+
+    @Override
+    public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
+        getUserByIdOrThrow(userId);
+        Event event = getEventByIdOrThrow(eventId);
+
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Пользователь не является инициатором этого события");
+        }
+
+        if (updateEventUserRequest.getEventDate() != null) {
+            if (updateEventUserRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+                throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
+            }
+            event.setEventDate(updateEventUserRequest.getEventDate());
+        }
+
+        if (event.getEventState().equals(EventState.PUBLISHED)) {
+            throw new ConflictException("Событие уже опубликовано");
+        }
+
+        if (updateEventUserRequest.getStateAction() != null) {
+            if (updateEventUserRequest.getStateAction().equals(UserStateAction.SEND_TO_REVIEW)) {
+                event.setEventState(EventState.PENDING);
+            } else if (updateEventUserRequest.getStateAction().equals(UserStateAction.CANCEL_REVIEW)) {
+                event.setEventState(EventState.CANCELED);
+            }
+        }
+
+        if (updateEventUserRequest.getAnnotation() != null)
+            event.setAnnotation(updateEventUserRequest.getAnnotation());
+
+        if (updateEventUserRequest.getCategory() != null)
+            event.setCategory(getCategoryByIdOrThrow(updateEventUserRequest.getCategory()));
+
+        if (updateEventUserRequest.getDescription() != null)
+            event.setDescription(updateEventUserRequest.getDescription());
+
+        if (updateEventUserRequest.getLocation() != null)
+            event.setLocation(eventMapper.toLocation(updateEventUserRequest.getLocation()));
+
+        if (updateEventUserRequest.getPaid() != null)
+            event.setPaid(updateEventUserRequest.getPaid());
+
+        if (updateEventUserRequest.getParticipantLimit() != null)
+            event.setParticipantLimit(updateEventUserRequest.getParticipantLimit());
+
+        if (updateEventUserRequest.getRequestModeration() != null)
+            event.setRequestModeration(updateEventUserRequest.getRequestModeration());
+
+        if (updateEventUserRequest.getTitle() != null)
+            event.setTitle(updateEventUserRequest.getTitle());
+
+        return eventMapper.toEventFullDto(eventRepository.save(event));
     }
 
     private Map<Long, Long> getViewsMap(List<Long> eventIds) {
