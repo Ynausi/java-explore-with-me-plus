@@ -41,7 +41,7 @@ public class Event {
     private User initiator;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categories_id")
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(name = "event_date", nullable = false)

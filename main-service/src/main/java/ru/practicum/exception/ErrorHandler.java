@@ -16,6 +16,18 @@ import java.io.StringWriter;
 @Slf4j
 public class ErrorHandler {
 
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiError handleNotFoundException(final NotFoundException e) {
+        return handleException(e, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final ConflictException e) {
+        return handleException(e, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequestException(final Exception e) {

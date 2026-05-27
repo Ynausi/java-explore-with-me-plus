@@ -10,6 +10,7 @@ import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.dto.event.UpdateEventUserRequest;
+import ru.practicum.service.event.EventService;
 
 import java.util.List;
 
@@ -18,7 +19,6 @@ import java.util.List;
 public class PrivateEventsController {
     private final EventService eventService;
 
-    // В случае, если по заданным фильтрам не найдено ни одного события, возвращает пустой список
     @GetMapping("/users/{userId}/events")
     public List<EventShortDto> getEventsByUser(@PathVariable Long userId,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
@@ -26,8 +26,6 @@ public class PrivateEventsController {
         return eventService.getEventsByUser(userId, from, size);
     }
 
-    // дата и время на которые намечено событие
-    // не может быть раньше, чем через два часа от текущего момента
     @PostMapping("/users/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable Long userId,
@@ -35,7 +33,6 @@ public class PrivateEventsController {
         return eventService.createEvent(userId, newEventDto);
     }
 
-    // В случае, если события с заданным id не найдено, возвращает статус код 404
     @GetMapping("/users/{userId}/events/{eventId}")
     public EventFullDto getEventById(@PathVariable Long userId,
                                      @PathVariable Long eventId) {
