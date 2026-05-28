@@ -27,21 +27,15 @@ public class Event {
     @Column(name = "description", nullable = false, length = 7000)
     private String description;
 
-    @ManyToMany
-    @JoinTable(
-            name = "event_requests",
-            joinColumns = @JoinColumn(name = "event_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-
-    )
-    private List<User> userRequests = new ArrayList<>();
+    @OneToMany(mappedBy = "event")
+    private List<ParticipationRequest> participationRequests = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User initiator;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categories_id")
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(name = "event_date", nullable = false)

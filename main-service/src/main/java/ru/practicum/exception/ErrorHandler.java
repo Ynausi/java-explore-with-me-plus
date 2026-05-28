@@ -1,12 +1,11 @@
 package ru.practicum.exception;
 
 import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,7 +25,8 @@ public class ErrorHandler {
     @ExceptionHandler({
             MethodArgumentNotValidException.class,
             MethodArgumentTypeMismatchException.class,
-            IllegalArgumentException.class
+            IllegalArgumentException.class,
+            MissingServletRequestParameterException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequestException(final Exception e) {
@@ -39,16 +39,17 @@ public class ErrorHandler {
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR, null);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handeNotFoundException(final EntityNotFoundException e) {
+    public ApiError handeNotFoundException(final RuntimeException e) {
         return handleException(e, HttpStatus.NOT_FOUND,"The required object was not found.");
     }
 
     @ExceptionHandler({
             DataIntegrityViolationException.class,
             CategoryDeleteConflictException.class,
-            EntityExistsException.class
+            AlreadyExistsException.class,
+            ParticipationRequestException.class
     })
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflictException(final RuntimeException e) {
