@@ -8,7 +8,7 @@ import ru.practicum.dto.users.NewUserRequest;
 import ru.practicum.dto.users.UserDto;
 import ru.practicum.mapper.users.UserMapper;
 import ru.practicum.model.User;
-import ru.practicum.repository.users.UsersRepository;
+import ru.practicum.repository.UsersRepository;
 
 import java.util.List;
 
@@ -42,9 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long userId) {
-        usersRepository.findById(userId).orElseThrow(() ->
-                new EntityNotFoundException(String.format("User with id=%s was not found", userId)));
-
+        usersRepository.findByIdOrThrow(userId);
         usersRepository.deleteById(userId);
     }
 }

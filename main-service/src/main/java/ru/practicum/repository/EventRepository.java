@@ -1,4 +1,4 @@
-package ru.practicum.repository.event;
+package ru.practicum.repository;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,5 +18,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
-    Boolean existsByCategory_Id(Long catId);
+    Boolean existsByCategoryId(Long categoryId);
 }
