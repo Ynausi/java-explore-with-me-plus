@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
-import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -20,6 +19,6 @@ public class UpdateCompilationRequest {
 
     private Boolean pinned;
 
-    @Size(min =1,max = 50)
+    @Size(min = 1,max = 50)
     private String title;
 }

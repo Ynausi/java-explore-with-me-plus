@@ -25,4 +25,16 @@ public interface CompilationRepository extends JpaRepository<Compilation,Long> {
                                        @Param("eventIds") Collection<Long> eventIds,
                                        @Param("eventsSize") long eventsSize);
 
+    @Query(value = """
+            select *
+            from compilations c
+            where c.pinned = :pinned
+            order by c.id asc
+            limit :size offset :from
+            """,
+            nativeQuery = true)
+    Collection<Compilation> findNeededCompilations(@Param("pinned") Boolean pinned,
+                                                           @Param("from") Integer from,
+                                                           @Param("size") Integer size);
+
 }

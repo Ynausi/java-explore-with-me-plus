@@ -6,14 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.compilation.CompilationRequest;
 import ru.practicum.dto.compilation.CompilationResponse;
+import ru.practicum.dto.compilation.GetCompilationListDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.compilation.CompilationMapper;
 import ru.practicum.model.Compilation;
 import ru.practicum.model.Event;
 import ru.practicum.repository.CompilationRepository;
-import ru.practicum.repository.event.EventRepository;
+import ru.practicum.repository.EventRepository;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -80,5 +82,22 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found",compId)));
         compilationRepository.delete(compilation);
+    }
+
+    @Override
+    public CompilationResponse findById(Long compId) {
+        Compilation compilation = compilationRepository.findById(compId).orElseThrow(
+                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found",compId)));
+        return compilationMapper.toResponse(compilation);
+    }
+
+    @Override
+    public Collection<CompilationResponse> findNeededCompilation(GetCompilationListDto getCompilationListDto) {
+        return compilationRepository.findNeededCompilations(getCompilationListDto.getPinned(),
+                        getCompilationListDto.getFrom(),
+                        getCompilationListDto.getSize())
+                .stream()
+                .map(compilationMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }
