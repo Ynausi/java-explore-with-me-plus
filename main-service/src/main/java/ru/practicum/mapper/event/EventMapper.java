@@ -6,6 +6,7 @@ import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.LocationDto;
 import ru.practicum.dto.event.NewEventDto;
+import ru.practicum.mapper.category.CategoryMapper;
 import ru.practicum.mapper.users.UserMapper;
 import ru.practicum.model.Event;
 import ru.practicum.model.Location;
@@ -18,9 +19,12 @@ public interface EventMapper {
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = DATE_TIME_FORMAT)
     EventShortDto toEventShortDto(Event event);
 
+    @Mapping(target = "category", ignore = true)
     Event toEvent(NewEventDto newEventDto);
 
     EventFullDto toEventFullDto(Event event);
+
+    LocationDto toLocationDto(Location location);
 
     Location toLocation(LocationDto locationDto);
 }

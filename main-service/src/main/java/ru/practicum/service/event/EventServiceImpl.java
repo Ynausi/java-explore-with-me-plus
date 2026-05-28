@@ -5,21 +5,27 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
 import ru.practicum.dto.StatsViewDto;
 import ru.practicum.dto.event.*;
+import ru.practicum.dto.requests.EventRequestStatusUpdateRequest;
+import ru.practicum.dto.requests.EventRequestStatusUpdateResult;
+import ru.practicum.dto.requests.ParticipationRequestDto;
+import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.event.EventMapper;
-import ru.practicum.model.Category;
-import ru.practicum.model.Event;
-import ru.practicum.model.EventState;
-import ru.practicum.model.User;
+import ru.practicum.mapper.requests.ParticipationRequestMapper;
+import ru.practicum.model.*;
+import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
+import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UsersRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -29,11 +35,13 @@ import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
+    private final ParticipationRequestRepository requestRepository;
+    private final ParticipationRequestMapper requestMapper;
     private final CategoryRepository categoryRepository;
-    private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
     private final UsersRepository usersRepository;
     private final StatsClient statsClient;
@@ -64,6 +72,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId) {
+        getUserByIdOrThrow(userId);
+        Event event = getEventByIdOrThrow(eventId);
+
+        if (!event.getInitiator().getId().equals(userId))
+            throw new NotFoundException("Пользователь не является инициатором этого события");
+        return requestRepository.findAllByEventId(eventId).stream()
+                .map(requestMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         User initiator = getUserByIdOrThrow(userId);
         LocalDateTime now = LocalDateTime.now();
@@ -109,6 +130,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         getUserByIdOrThrow(userId);
         Event event = getEventByIdOrThrow(eventId);
@@ -163,6 +185,61 @@ public class EventServiceImpl implements EventService {
         return eventMapper.toEventFullDto(eventRepository.save(event));
     }
 
+    @Override
+    @Transactional
+    public EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest) {
+        getUserByIdOrThrow(userId);
+        Event event = getEventByIdOrThrow(eventId);
+
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Пользователь не является инициатором этого события");
+        }
+
+        long confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+        if (event.getParticipantLimit() > 0 && confirmedCount >= event.getParticipantLimit()) {
+            throw new ConflictException("Лимит участников для данного события уже исчерпан");
+        }
+
+        List<ParticipationRequest> requests = requestRepository.findAllById(updateRequest.getRequestIds());
+
+        for (ParticipationRequest request : requests) {
+            if (!request.getEvent().getId().equals(eventId)) {
+                throw new BadRequestException("Запрос не относится к данному событию");
+            }
+            if (!request.getStatus().equals(RequestStatus.PENDING)) {
+                throw new ConflictException("Статус можно менять только у заявок, находящихся в состоянии ожидания");
+            }
+        }
+
+        List<ParticipationRequest> confirmedRequests = new ArrayList<>();
+        List<ParticipationRequest> rejectedRequests = new ArrayList<>();
+        RequestStatus targetStatus = updateRequest.getStatus();
+
+        if (targetStatus == RequestStatus.REJECTED) {
+            for (ParticipationRequest request : requests) {
+                request.setStatus(RequestStatus.REJECTED);
+                rejectedRequests.add(request);
+            }
+        } else if (targetStatus == RequestStatus.CONFIRMED) {
+            for (ParticipationRequest request : requests) {
+                if (event.getParticipantLimit() == 0 || confirmedCount < event.getParticipantLimit()) {
+                    request.setStatus(RequestStatus.CONFIRMED);
+                    confirmedRequests.add(request);
+                    confirmedCount++;
+                } else {
+                    request.setStatus(RequestStatus.REJECTED);
+                    rejectedRequests.add(request);
+                }
+            }
+        }
+
+        requestRepository.saveAll(requests);
+        return EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(confirmedRequests.stream().map(requestMapper::toDto).toList())
+                .rejectedRequests(rejectedRequests.stream().map(requestMapper::toDto).toList())
+                .build();
+    }
+
     private Map<Long, Long> getViewsMap(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) return Collections.emptyMap();
 
@@ -193,7 +270,6 @@ public class EventServiceImpl implements EventService {
     private Map<Long, Long> getConfirmedRequestsMap(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) return Collections.emptyMap();
 
-        // Данный метод отсутствует в репо, так как ребята пока не реализовали
         List<Object[]> result = requestRepository.countByEventIdsAndStatus(eventIds, RequestStatus.CONFIRMED);
 
         return result.stream()

@@ -26,7 +26,8 @@ public class ErrorHandler {
             MethodArgumentNotValidException.class,
             MethodArgumentTypeMismatchException.class,
             IllegalArgumentException.class,
-            MissingServletRequestParameterException.class
+            MissingServletRequestParameterException.class,
+            BadRequestException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequestException(final Exception e) {
@@ -42,7 +43,7 @@ public class ErrorHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handeNotFoundException(final RuntimeException e) {
-        return handleException(e, HttpStatus.NOT_FOUND,"The required object was not found.");
+        return handleException(e, HttpStatus.NOT_FOUND, "The required object was not found.");
     }
 
     @ExceptionHandler({
