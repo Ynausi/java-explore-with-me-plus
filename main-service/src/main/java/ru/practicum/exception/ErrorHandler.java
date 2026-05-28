@@ -39,7 +39,10 @@ public class ErrorHandler {
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR, null);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
+    @ExceptionHandler({
+            EntityNotFoundException.class,
+            NotFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handeNotFoundException(final EntityNotFoundException e) {
         return handleException(e, HttpStatus.NOT_FOUND,"The required object was not found.");

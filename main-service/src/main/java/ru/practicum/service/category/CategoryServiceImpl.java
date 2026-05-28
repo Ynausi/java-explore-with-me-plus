@@ -11,6 +11,8 @@ import ru.practicum.exception.CategoryDeleteConflictException;
 import ru.practicum.mapper.category.CategoryMapper;
 import ru.practicum.model.Category;
 import ru.practicum.repository.category.CategoryRepository;
+import ru.practicum.repository.event.EventRepository;
+
 import java.util.Collection;
 
 @Service
