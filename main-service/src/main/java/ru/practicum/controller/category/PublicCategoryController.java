@@ -30,7 +30,7 @@ public class PublicCategoryController {
 
     @GetMapping("/{catId}")
     public ResponseEntity<CategoryResponse> getCategory(@PathVariable("catId") Long catId) {
-        log.info("Get category with id: {}",catId);
+        log.info("Get category with id: {}", catId);
         return ResponseEntity.ok().body(categoryService.findCategoryById(catId));
     }
 

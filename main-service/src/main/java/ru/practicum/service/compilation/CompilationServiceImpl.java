@@ -13,7 +13,7 @@ import ru.practicum.mapper.compilation.CompilationMapper;
 import ru.practicum.model.Compilation;
 import ru.practicum.model.Event;
 import ru.practicum.repository.CompilationRepository;
-import ru.practicum.repository.EventRepository;
+import ru.practicum.repository.event.EventRepository;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -48,7 +48,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationResponse update(UpdateCompilationRequest compilationRequest, Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found",compId)));
+                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found", compId)));
         if (compilationRequest.getPinned() != null && !(compilationRequest.getPinned()).equals(compilation.getPinned())) {
             compilation.setPinned(compilationRequest.getPinned());
         }
@@ -63,7 +63,7 @@ public class CompilationServiceImpl implements CompilationService {
                     .collect(Collectors.toSet());
 
             if (!requestEventIds.equals(currentEventIds)) {
-                List<Event> foundEvents =  eventRepository.findAllById(requestEventIds);
+                List<Event> foundEvents = eventRepository.findAllById(requestEventIds);
                 Set<Long> foundEventIds = foundEvents.stream()
                         .map(Event::getId)
                         .collect(Collectors.toSet());
@@ -80,14 +80,14 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public void delete(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found",compId)));
+                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found", compId)));
         compilationRepository.delete(compilation);
     }
 
     @Override
     public CompilationResponse findById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found",compId)));
+                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found", compId)));
         return compilationMapper.toResponse(compilation);
     }
 

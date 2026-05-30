@@ -4,9 +4,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.model.Compilation;
+
 import java.util.Collection;
 
-public interface CompilationRepository extends JpaRepository<Compilation,Long> {
+public interface CompilationRepository extends JpaRepository<Compilation, Long> {
 
     @Query(value = """
             select exists (
@@ -34,7 +35,7 @@ public interface CompilationRepository extends JpaRepository<Compilation,Long> {
             """,
             nativeQuery = true)
     Collection<Compilation> findNeededCompilations(@Param("pinned") Boolean pinned,
-                                                           @Param("from") Integer from,
-                                                           @Param("size") Integer size);
+                                                   @Param("from") Integer from,
+                                                   @Param("size") Integer size);
 
 }

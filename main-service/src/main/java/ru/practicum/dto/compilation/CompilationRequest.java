@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +24,6 @@ public class CompilationRequest {
     private Boolean pinned = false;
 
     @NotBlank
-    @Size(min = 1,max = 50)
+    @Size(min = 1, max = 50)
     private String title;
 }
