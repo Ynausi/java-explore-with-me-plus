@@ -1,6 +1,7 @@
 package ru.practicum.exception;
 
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -40,9 +41,12 @@ public class ErrorHandler {
         return handleException(e, HttpStatus.INTERNAL_SERVER_ERROR, null);
     }
 
-    @ExceptionHandler(NotFoundException.class)
+    @ExceptionHandler({
+            EntityNotFoundException.class,
+            NotFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handeNotFoundException(final RuntimeException e) {
+    public ApiError handeNotFoundException(final EntityNotFoundException e) {
         return handleException(e, HttpStatus.NOT_FOUND, "The required object was not found.");
     }
 

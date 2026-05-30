@@ -3,9 +3,8 @@ package ru.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "compilations", schema = "public")
@@ -33,5 +32,5 @@ public class Compilation {
             joinColumns = @JoinColumn(name = "compilation_id"),
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )
-    private List<Event> events = new ArrayList<>();
+    private Set<Event> events = new HashSet<>();
 }
