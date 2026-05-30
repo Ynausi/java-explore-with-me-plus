@@ -11,7 +11,7 @@ import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.category.CategoryMapper;
 import ru.practicum.model.Category;
 import ru.practicum.repository.CategoryRepository;
-import ru.practicum.repository.EventRepository;
+import ru.practicum.repository.event.EventRepository;
 
 import java.util.Collection;
 
@@ -25,18 +25,18 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse save(CategoryRequest categoryRequest) {
         if (categoryRepository.existsByName(categoryRequest.getName())) {
-            throw new AlreadyExistsException(String.format("Category with name=%s already exist",categoryRequest.getName()));
+            throw new AlreadyExistsException(String.format("Category with name=%s already exist", categoryRequest.getName()));
         }
         Category newCategory = categoryRepository.save(categoryMapper.toModel(categoryRequest));
         return categoryMapper.toResponse(newCategory);
     }
 
     @Override
-    public CategoryResponse update(Long catId,CategoryRequest categoryRequest) {
+    public CategoryResponse update(Long catId, CategoryRequest categoryRequest) {
         Category category = categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException(String.format("Category with id=%s was not found",catId)));
-        if (categoryRepository.existsByNameAndIdNot(categoryRequest.getName(),catId)) {
-            throw new AlreadyExistsException(String.format("Category with name=%s already exist",categoryRequest.getName()));
+                () -> new NotFoundException(String.format("Category with id=%s was not found", catId)));
+        if (categoryRepository.existsByNameAndIdNot(categoryRequest.getName(), catId)) {
+            throw new AlreadyExistsException(String.format("Category with name=%s already exist", categoryRequest.getName()));
         }
         category.setName(categoryRequest.getName());
         return categoryMapper.toResponse(categoryRepository.save(category));
@@ -45,17 +45,17 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void delete(Long catId) {
         Category category = categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException(String.format("Category with id=%s was not found",catId)));
+                () -> new NotFoundException(String.format("Category with id=%s was not found", catId)));
 
         if (eventRepository.existsByCategoryId(catId)) {
-            throw  new CategoryDeleteConflictException("Cannot delete category, because some events have it");
+            throw new CategoryDeleteConflictException("Cannot delete category, because some events have it");
         }
         categoryRepository.delete(category);
     }
 
     @Override
     public Collection<CategoryResponse> getNeeded(CategoryFilter categoryFilter) {
-        return categoryRepository.findNeededCategories(categoryFilter.getFrom(),categoryFilter.getSize())
+        return categoryRepository.findNeededCategories(categoryFilter.getFrom(), categoryFilter.getSize())
                 .stream()
                 .map(categoryMapper::toResponse)
                 .toList();
@@ -64,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponse findCategoryById(Long catId) {
         Category category = categoryRepository.findById(catId).orElseThrow(
-                () -> new NotFoundException(String.format("Category with id=%s was not found",catId)));
+                () -> new NotFoundException(String.format("Category with id=%s was not found", catId)));
         return categoryMapper.toResponse(category);
     }
 

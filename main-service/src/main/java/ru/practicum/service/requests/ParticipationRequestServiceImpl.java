@@ -11,9 +11,9 @@ import ru.practicum.model.Event;
 import ru.practicum.model.EventState;
 import ru.practicum.model.ParticipationRequest;
 import ru.practicum.model.RequestStatus;
-import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UsersRepository;
+import ru.practicum.repository.event.EventRepository;
 
 import java.util.List;
 import java.util.Objects;

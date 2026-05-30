@@ -20,7 +20,7 @@ public class PublicCategoryController {
     @GetMapping
     public ResponseEntity<Collection<CategoryResponse>> getNeededCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                                             @RequestParam(defaultValue = "10") @Positive Integer size) {
-        CategoryFilter categoryFilter = new CategoryFilter(from,size);
+        CategoryFilter categoryFilter = new CategoryFilter(from, size);
         return ResponseEntity.ok()
                 .body(categoryService.getNeeded(categoryFilter));
     }

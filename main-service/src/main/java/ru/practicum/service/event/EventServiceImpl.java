@@ -1,6 +1,7 @@
 package ru.practicum.service.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -19,9 +20,9 @@ import ru.practicum.mapper.event.EventMapper;
 import ru.practicum.mapper.requests.ParticipationRequestMapper;
 import ru.practicum.model.*;
 import ru.practicum.repository.CategoryRepository;
-import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UsersRepository;
+import ru.practicum.repository.event.EventRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,8 +33,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
+import static ru.practicum.model.EventState.PUBLISHED;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
@@ -110,7 +113,7 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto fullDto = eventMapper.toEventFullDto(createdEvent);
         fullDto.setViews(0L);
-        fullDto.setConfirmedRequests(0);
+        fullDto.setConfirmedRequests(0L);
         return fullDto;
     }
 
@@ -122,7 +125,7 @@ public class EventServiceImpl implements EventService {
 
         Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
 
-        Integer confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+        Long confirmedRequests = requestRepository.countConfirmedRequestsByEventId(eventId);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         eventFullDto.setViews(viewsMap.getOrDefault(eventId, 0L));
         eventFullDto.setConfirmedRequests(confirmedRequests);
@@ -290,5 +293,142 @@ public class EventServiceImpl implements EventService {
 
     private Event getEventByIdOrThrow(Long eventId) {
         return eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие с id - " + eventId + " не найдено"));
+    }
+
+    @Override
+    public List<EventFullDto> getEventsByAdmin(List<Long> users,
+                                               List<EventState> states,
+                                               List<Long> categories,
+                                               LocalDateTime rangeStart,
+                                               LocalDateTime rangeEnd,
+                                               Integer from,
+                                               Integer size) {
+        EventSearchFilterAdmin filter = new EventSearchFilterAdmin(users, states, categories, rangeStart, rangeEnd);
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+
+        List<Event> events = eventRepository.searchAdmin(filter, pageable);
+
+        if (events.isEmpty()) return Collections.emptyList();
+
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Map<Long, Long> viewsMap = getViewsMap(eventIds);
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(eventIds);
+
+        return events.stream()
+                .map(event -> {
+                    EventFullDto dto = eventMapper.toEventFullDto(event);
+                    dto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+                    dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Transactional
+    @Override
+    public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request) {
+        Event event = getEventByIdOrThrow(eventId);
+
+        if (request.getEventDate() != null) {
+            if (request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+                throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем " +
+                        "через два часа от текущего момента");
+            }
+            event.setEventDate(request.getEventDate());
+        }
+
+        if (request.getStateAction() != null) {
+            if (request.getStateAction().equals(AdminStateAction.PUBLISH_EVENT)) {
+                if (!event.getEventState().equals(EventState.PENDING)) {
+                    throw new ConflictException("Можно публиковать только события в состоянии ожидания публикации");
+                }
+                event.setEventState(PUBLISHED);
+                event.setPublishedOn(LocalDateTime.now());
+            } else if (request.getStateAction().equals(AdminStateAction.REJECT_EVENT)) {
+                if (event.getEventState().equals(PUBLISHED)) {
+                    throw new ConflictException("Нельзя отклонить уже опубликованное событие");
+                }
+                event.setEventState(EventState.CANCELED);
+            }
+        }
+
+        if (request.getAnnotation() != null)
+            event.setAnnotation(request.getAnnotation());
+
+        if (request.getCategory() != null)
+            event.setCategory(getCategoryByIdOrThrow(request.getCategory()));
+
+        if (request.getDescription() != null)
+            event.setDescription(request.getDescription());
+
+        if (request.getLocation() != null)
+            event.setLocation(eventMapper.toLocation(request.getLocation()));
+
+        if (request.getPaid() != null)
+            event.setPaid(request.getPaid());
+
+        if (request.getParticipantLimit() != null)
+            event.setParticipantLimit(request.getParticipantLimit());
+
+        if (request.getRequestModeration() != null)
+            event.setRequestModeration(request.getRequestModeration());
+
+        if (request.getTitle() != null)
+            event.setTitle(request.getTitle());
+
+        log.info("Событие с id - {} обновлено администратором", eventId);
+
+        return eventMapper.toEventFullDto(eventRepository.save(event));
+    }
+
+    @Override
+    public List<EventShortDto> getEventsPublic(String text,
+                                               List<Long> categories,
+                                               Boolean paid,
+                                               LocalDateTime rangeStart,
+                                               LocalDateTime rangeEnd,
+                                               Boolean onlyAvailable,
+                                               PublicEventSort sort,
+                                               Integer from,
+                                               Integer size) {
+        EventSearchFilterPublic filter = new EventSearchFilterPublic(text, categories, paid, rangeStart, rangeEnd,
+                onlyAvailable, sort);
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+
+        List<Event> events = eventRepository.searchPublic(filter, pageable);
+
+        if (events.isEmpty()) return Collections.emptyList();
+
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+        Map<Long, Long> viewsMap = getViewsMap(eventIds);
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequestsMap(eventIds);
+
+        return events.stream()
+                .map(event -> {
+                    EventShortDto dto = eventMapper.toEventShortDto(event);
+                    dto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+                    dto.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(), 0L));
+                    return dto;
+                })
+                .toList();
+    }
+
+    @Override
+    public EventFullDto getPublicEventById(Long eventId) {
+        Event event = getEventByIdOrThrow(eventId);
+
+        if (!event.getEventState().equals(PUBLISHED)) {
+            throw new NotFoundException("Событие с id - " + eventId + " не найдено");
+        }
+
+        Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
+        Long confirmedRequests = requestRepository.countConfirmedRequestsByEventId(eventId);
+
+        EventFullDto dto = eventMapper.toEventFullDto(event);
+        dto.setViews(viewsMap.getOrDefault(eventId, 0L));
+        dto.setConfirmedRequests(confirmedRequests);
+        return dto;
     }
 }

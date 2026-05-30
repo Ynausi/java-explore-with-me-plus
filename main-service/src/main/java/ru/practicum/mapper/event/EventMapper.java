@@ -22,6 +22,7 @@ public interface EventMapper {
     @Mapping(target = "category", ignore = true)
     Event toEvent(NewEventDto newEventDto);
 
+    @Mapping(target = "state", source = "eventState")
     EventFullDto toEventFullDto(Event event);
 
     LocationDto toLocationDto(Location location);
