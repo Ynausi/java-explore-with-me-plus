@@ -1,5 +1,6 @@
 package ru.practicum.controller.event;
 
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,7 +23,8 @@ public class PublicEventsController {
 
     @GetMapping
     public List<EventShortDto> getEventsPublic(@RequestParam(required = false) String text,
-                                               @RequestParam(required = false) List<Long> categories,
+                                               @RequestParam(required = false) List<@Positive Long> categories,
+                                               @RequestParam(required = false) List<@Positive Long> users,
                                                @RequestParam(required = false) Boolean paid,
                                                @RequestParam(required = false)
                                                @DateTimeFormat(pattern = Constants.DATE_TIME_FORMAT)
@@ -34,7 +36,7 @@ public class PublicEventsController {
                                                @RequestParam(required = false) PublicEventSort sort,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                @RequestParam(defaultValue = "10") @PositiveOrZero Integer size) {
-        return eventService.getEventsPublic(text, categories, paid, rangeStart, rangeEnd,
+        return eventService.getEventsPublic(text, categories, users, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size);
     }
 

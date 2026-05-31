@@ -16,8 +16,8 @@ import ru.practicum.dto.requests.ParticipationRequestDto;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.mapper.event.EventMapper;
-import ru.practicum.mapper.requests.ParticipationRequestMapper;
+import ru.practicum.mapper.EventMapper;
+import ru.practicum.mapper.ParticipationRequestMapper;
 import ru.practicum.model.*;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
@@ -93,7 +93,7 @@ public class EventServiceImpl implements EventService {
         LocalDateTime now = LocalDateTime.now();
 
         if (newEventDto.getEventDate().isBefore(now.plusHours(2))) {
-            throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
+            throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
         }
 
         Category category = getCategoryByIdOrThrow(newEventDto.getCategory());
@@ -144,7 +144,7 @@ public class EventServiceImpl implements EventService {
 
         if (updateEventUserRequest.getEventDate() != null) {
             if (updateEventUserRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
+                throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
             }
             event.setEventDate(updateEventUserRequest.getEventDate());
         }
@@ -332,7 +332,7 @@ public class EventServiceImpl implements EventService {
 
         if (request.getEventDate() != null) {
             if (request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, чем " +
+                throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем " +
                         "через два часа от текущего момента");
             }
             event.setEventDate(request.getEventDate());
@@ -385,6 +385,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getEventsPublic(String text,
                                                List<Long> categories,
+                                               List<Long> users,
                                                Boolean paid,
                                                LocalDateTime rangeStart,
                                                LocalDateTime rangeEnd,
@@ -392,7 +393,7 @@ public class EventServiceImpl implements EventService {
                                                PublicEventSort sort,
                                                Integer from,
                                                Integer size) {
-        EventSearchFilterPublic filter = new EventSearchFilterPublic(text, categories, paid, rangeStart, rangeEnd,
+        EventSearchFilterPublic filter = new EventSearchFilterPublic(text, categories, users, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort);
         int page = from / size;
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());

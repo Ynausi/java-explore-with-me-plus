@@ -6,6 +6,7 @@ import java.util.List;
 public record EventSearchFilterPublic(
         String text,
         List<Long> categories,
+        List<Long> users,
         Boolean paid,
         LocalDateTime rangeStart,
         LocalDateTime rangeEnd,

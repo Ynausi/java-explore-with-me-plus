@@ -71,6 +71,10 @@ public class EventRepositoryImpl implements EventQuerydslRepository {
             where.and(e.category.id.in(filter.categories()));
         }
 
+        if (filter.users() != null && !filter.users().isEmpty()) {
+            where.and(e.initiator.id.in(filter.users()));
+        }
+
         if (filter.paid() != null) {
             where.and(e.paid.eq(filter.paid()));
         }
@@ -114,8 +118,7 @@ public class EventRepositoryImpl implements EventQuerydslRepository {
                 case "id" -> specifiers.add(asc ? e.id.asc() : e.id.desc());
                 case "eventDate" -> specifiers.add(asc ? e.eventDate.asc() : e.eventDate.desc());
                 case "createdOn" -> specifiers.add(asc ? e.createdOn.asc() : e.createdOn.desc());
-                default -> {
-                }
+                default -> specifiers.add(e.id.asc());
             }
         }
         return specifiers;

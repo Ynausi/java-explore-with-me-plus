@@ -1,15 +1,14 @@
 package ru.practicum.service.compilation;
 
-import jakarta.persistence.EntityExistsException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.compilation.CompilationRequest;
 import ru.practicum.dto.compilation.CompilationResponse;
 import ru.practicum.dto.compilation.GetCompilationListDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
+import ru.practicum.exception.AlreadyExistsException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.mapper.compilation.CompilationMapper;
+import ru.practicum.mapper.CompilationMapper;
 import ru.practicum.model.Compilation;
 import ru.practicum.model.Event;
 import ru.practicum.repository.CompilationRepository;
@@ -36,7 +35,7 @@ public class CompilationServiceImpl implements CompilationService {
                 eventIds.size());
 
         if (exists) {
-            throw new EntityExistsException("Compilation with same title and events already exists");
+            throw new AlreadyExistsException("Compilation with same title and events already exists");
         }
 
         Set<Event> events = new HashSet<>(eventRepository.findAllById(eventIds));
@@ -48,7 +47,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationResponse update(UpdateCompilationRequest compilationRequest, Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found", compId)));
+                () -> new NotFoundException(String.format("Compilation with id=%s was not found", compId)));
         if (compilationRequest.getPinned() != null && !(compilationRequest.getPinned()).equals(compilation.getPinned())) {
             compilation.setPinned(compilationRequest.getPinned());
         }
@@ -80,14 +79,14 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public void delete(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found", compId)));
+                () -> new NotFoundException(String.format("Compilation with id=%s was not found", compId)));
         compilationRepository.delete(compilation);
     }
 
     @Override
     public CompilationResponse findById(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
-                () -> new EntityNotFoundException(String.format("Compilation with id=%s was not found", compId)));
+                () -> new NotFoundException(String.format("Compilation with id=%s was not found", compId)));
         return compilationMapper.toResponse(compilation);
     }
 

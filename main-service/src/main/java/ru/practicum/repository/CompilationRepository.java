@@ -13,7 +13,7 @@ public interface CompilationRepository extends JpaRepository<Compilation, Long> 
             select exists (
                 select 1
                 from compilations c
-                left join compilation_events ce on c.id = ce.compilation_id
+                left join compilations_events ce on c.id = ce.compilation_id
                 where c.title = :title
                 group by c.id
                 having count(distinct ce.event_id) = :eventsSize

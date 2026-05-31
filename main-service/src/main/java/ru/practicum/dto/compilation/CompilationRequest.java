@@ -1,8 +1,6 @@
 package ru.practicum.dto.compilation;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,8 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class CompilationRequest {
 
-    @NotEmpty
-    private Set<@NotNull Long> events = new HashSet<>();
+    private Set<Long> events = new HashSet<>();
 
     private Boolean pinned = false;
 

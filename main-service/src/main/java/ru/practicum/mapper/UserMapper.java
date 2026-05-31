@@ -1,4 +1,4 @@
-package ru.practicum.mapper.users;
+package ru.practicum.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

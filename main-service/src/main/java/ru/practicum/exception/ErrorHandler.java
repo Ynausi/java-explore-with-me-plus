@@ -10,6 +10,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
@@ -28,6 +29,7 @@ public class ErrorHandler {
             MethodArgumentTypeMismatchException.class,
             IllegalArgumentException.class,
             MissingServletRequestParameterException.class,
+            HandlerMethodValidationException.class,
             BadRequestException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -46,7 +48,7 @@ public class ErrorHandler {
             NotFoundException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handeNotFoundException(final EntityNotFoundException e) {
+    public ApiError handeNotFoundException(final RuntimeException e) {
         return handleException(e, HttpStatus.NOT_FOUND, "The required object was not found.");
     }
 
@@ -54,7 +56,8 @@ public class ErrorHandler {
             DataIntegrityViolationException.class,
             CategoryDeleteConflictException.class,
             AlreadyExistsException.class,
-            ParticipationRequestException.class
+            ParticipationRequestException.class,
+            ConflictException.class
     })
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflictException(final RuntimeException e) {
