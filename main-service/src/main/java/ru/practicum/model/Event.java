@@ -2,6 +2,7 @@ package ru.practicum.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -60,7 +61,8 @@ public class Event {
     @Column(nullable = false)
     private EventState eventState;
 
-    @Column(name = "created_on", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_on", nullable = false, updatable = false)
     private LocalDateTime createdOn;
 
     @Column(name = "published_on")

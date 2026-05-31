@@ -90,9 +90,8 @@ public class EventServiceImpl implements EventService {
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         User initiator = getUserByIdOrThrow(userId);
-        LocalDateTime now = LocalDateTime.now();
 
-        if (newEventDto.getEventDate().isBefore(now.plusHours(2))) {
+        if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
         }
 
@@ -107,7 +106,6 @@ public class EventServiceImpl implements EventService {
         if (newEvent.getRequestModeration() == null) newEvent.setRequestModeration(true);
 
         newEvent.setEventState(EventState.PENDING);
-        newEvent.setCreatedOn(now);
 
         Event createdEvent = eventRepository.save(newEvent);
 
@@ -125,7 +123,7 @@ public class EventServiceImpl implements EventService {
 
         Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
 
-        Long confirmedRequests = requestRepository.countConfirmedRequestsByEventId(eventId);
+        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         eventFullDto.setViews(viewsMap.getOrDefault(eventId, 0L));
         eventFullDto.setConfirmedRequests(confirmedRequests);
@@ -425,7 +423,7 @@ public class EventServiceImpl implements EventService {
         }
 
         Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
-        Long confirmedRequests = requestRepository.countConfirmedRequestsByEventId(eventId);
+        Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
 
         EventFullDto dto = eventMapper.toEventFullDto(event);
         dto.setViews(viewsMap.getOrDefault(eventId, 0L));

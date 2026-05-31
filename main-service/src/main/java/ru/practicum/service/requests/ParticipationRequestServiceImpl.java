@@ -77,7 +77,8 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     private void validateRequest(Event event, Long userId) {
         Integer eventParticipationLimit = event.getParticipantLimit();
-        long currentConfirmedRequests = requestRepository.countConfirmedRequestsByEventId(event.getId());
+        Long currentConfirmedRequests =
+                requestRepository.countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
 
         if (Objects.equals(userId, event.getInitiator().getId())) {
             throw new ParticipationRequestException(
