@@ -10,7 +10,7 @@ import ru.practicum.dto.category.CategoryFilter;
 import ru.practicum.dto.category.CategoryResponse;
 import ru.practicum.service.category.CategoryService;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
@@ -20,8 +20,8 @@ public class PublicCategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<Collection<CategoryResponse>> getNeededCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                                                            @RequestParam(defaultValue = "10") @Positive Integer size) {
+    public ResponseEntity<List<CategoryResponse>> getNeededCategories(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                                      @RequestParam(defaultValue = "10") @Positive Integer size) {
         log.info("Get needed categories");
         CategoryFilter categoryFilter = new CategoryFilter(from, size);
         return ResponseEntity.ok()

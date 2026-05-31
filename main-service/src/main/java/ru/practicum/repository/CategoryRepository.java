@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.model.Category;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
@@ -13,13 +13,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Boolean existsByNameAndIdNot(String name, Long catId);
 
-    @Query(value = """
-            select *
-            from categories
-            order by id asc
-            limit :size offset :from
-            """,
-            nativeQuery = true)
-    Collection<Category> findNeededCategories(@Param("from") Integer from,
-                                              @Param("size") Integer size);
+    @Query("SELECT c FROM Category c ORDER BY c.id LIMIT :size OFFSET :from")
+    List<Category> findNeededCategories(@Param("from") Integer from,
+                                        @Param("size") Integer size);
 }

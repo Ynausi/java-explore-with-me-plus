@@ -2,6 +2,7 @@ package ru.practicum.service.compilation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.compilation.CompilationRequest;
 import ru.practicum.dto.compilation.CompilationResponse;
 import ru.practicum.dto.compilation.GetCompilationListDto;
@@ -22,12 +23,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final CompilationMapper compilationMapper;
     private final EventRepository eventRepository;
 
     @Override
+    @Transactional
     public CompilationResponse save(CompilationRequest compilationRequest) {
         Set<Long> eventIds = new HashSet<>(compilationRequest.getEvents());
         boolean exists = compilationRepository.existsByTitleAndSameEvents(compilationRequest.getTitle(),
@@ -45,9 +48,11 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public CompilationResponse update(UpdateCompilationRequest compilationRequest, Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Compilation with id=%s was not found", compId)));
+
         if (compilationRequest.getPinned() != null && !(compilationRequest.getPinned()).equals(compilation.getPinned())) {
             compilation.setPinned(compilationRequest.getPinned());
         }
@@ -73,10 +78,12 @@ public class CompilationServiceImpl implements CompilationService {
             }
 
         }
+
         return compilationMapper.toResponse(compilationRepository.save(compilation));
     }
 
     @Override
+    @Transactional
     public void delete(Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(String.format("Compilation with id=%s was not found", compId)));

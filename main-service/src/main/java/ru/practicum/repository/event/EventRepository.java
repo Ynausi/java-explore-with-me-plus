@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.model.Event;
-import ru.practicum.model.EventState;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +19,4 @@ public interface EventRepository extends JpaRepository<Event, Long>, EventQueryd
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
     Boolean existsByCategoryId(Long categoryId);
-
-    Optional<Event> findByIdAndEventState(Long id, EventState eventState);
 }

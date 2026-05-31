@@ -54,9 +54,7 @@ public class ErrorHandler {
 
     @ExceptionHandler({
             DataIntegrityViolationException.class,
-            CategoryDeleteConflictException.class,
             AlreadyExistsException.class,
-            ParticipationRequestException.class,
             ConflictException.class
     })
     @ResponseStatus(HttpStatus.CONFLICT)
