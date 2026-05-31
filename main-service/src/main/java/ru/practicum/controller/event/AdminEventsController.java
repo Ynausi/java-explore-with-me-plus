@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.constant.Constants;
 import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.dto.event.EventSearchFilterAdmin;
 import ru.practicum.dto.event.UpdateEventAdminRequest;
 import ru.practicum.model.EventState;
 import ru.practicum.service.event.EventService;
@@ -33,7 +34,9 @@ public class AdminEventsController {
                                                LocalDateTime rangeEnd,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                                @RequestParam(defaultValue = "10") @PositiveOrZero Integer size) {
-        return eventService.getEventsByAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        EventSearchFilterAdmin filter = new EventSearchFilterAdmin(users, states, categories, rangeStart, rangeEnd);
+
+        return eventService.getEventsByAdmin(filter, from, size);
     }
 
     @PatchMapping("/{eventId}")

@@ -1,12 +1,11 @@
 package ru.practicum.service.event;
 
+import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.dto.event.*;
 import ru.practicum.dto.requests.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.requests.EventRequestStatusUpdateResult;
 import ru.practicum.dto.requests.ParticipationRequestDto;
-import ru.practicum.model.EventState;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
@@ -22,26 +21,16 @@ public interface EventService {
 
     EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequest);
 
-    List<EventFullDto> getEventsByAdmin(List<Long> users,
-                                        List<EventState> states,
-                                        List<Long> categories,
-                                        LocalDateTime rangeStart,
-                                        LocalDateTime rangeEnd,
+    List<EventFullDto> getEventsByAdmin(EventSearchFilterAdmin filter,
                                         Integer from,
                                         Integer size);
 
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request);
 
-    List<EventShortDto> getEventsPublic(String text,
-                                        List<Long> categories,
-                                        List<Long> users,
-                                        Boolean paid,
-                                        LocalDateTime rangeStart,
-                                        LocalDateTime rangeEnd,
-                                        Boolean onlyAvailable,
-                                        PublicEventSort sort,
+    List<EventShortDto> getEventsPublic(EventSearchFilterPublic filter,
                                         Integer from,
-                                        Integer size);
+                                        Integer size,
+                                        HttpServletRequest request);
 
-    EventFullDto getPublicEventById(Long eventId);
+    EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 }

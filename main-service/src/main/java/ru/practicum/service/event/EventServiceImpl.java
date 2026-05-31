@@ -1,5 +1,6 @@
 package ru.practicum.service.event;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -8,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
+import ru.practicum.dto.HitRequestDto;
 import ru.practicum.dto.StatsViewDto;
 import ru.practicum.dto.event.*;
 import ru.practicum.dto.requests.EventRequestStatusUpdateRequest;
@@ -294,14 +296,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventFullDto> getEventsByAdmin(List<Long> users,
-                                               List<EventState> states,
-                                               List<Long> categories,
-                                               LocalDateTime rangeStart,
-                                               LocalDateTime rangeEnd,
+    public List<EventFullDto> getEventsByAdmin(EventSearchFilterAdmin filter,
                                                Integer from,
                                                Integer size) {
-        EventSearchFilterAdmin filter = new EventSearchFilterAdmin(users, states, categories, rangeStart, rangeEnd);
         int page = from / size;
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
@@ -381,18 +378,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventShortDto> getEventsPublic(String text,
-                                               List<Long> categories,
-                                               List<Long> users,
-                                               Boolean paid,
-                                               LocalDateTime rangeStart,
-                                               LocalDateTime rangeEnd,
-                                               Boolean onlyAvailable,
-                                               PublicEventSort sort,
+    public List<EventShortDto> getEventsPublic(EventSearchFilterPublic filter,
                                                Integer from,
-                                               Integer size) {
-        EventSearchFilterPublic filter = new EventSearchFilterPublic(text, categories, users, paid, rangeStart, rangeEnd,
-                onlyAvailable, sort);
+                                               Integer size,
+                                               HttpServletRequest request) {
+
+        statsClient.hit(new HitRequestDto("main-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now()));
+
         int page = from / size;
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
@@ -415,12 +408,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto getPublicEventById(Long eventId) {
+    @Transactional
+    public EventFullDto getPublicEventById(Long eventId, HttpServletRequest request) {
         Event event = getEventByIdOrThrow(eventId);
 
         if (!event.getEventState().equals(PUBLISHED)) {
             throw new NotFoundException("Событие с id - " + eventId + " не найдено");
         }
+
+        statsClient.hit(new HitRequestDto("main-service", request.getRequestURI(), request.getRemoteAddr(),
+                LocalDateTime.now()));
 
         Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);

@@ -1,5 +1,6 @@
 package ru.practicum.controller.event;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.constant.Constants;
 import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.dto.event.EventSearchFilterPublic;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.dto.event.PublicEventSort;
 import ru.practicum.service.event.EventService;
@@ -35,13 +37,15 @@ public class PublicEventsController {
                                                @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                @RequestParam(required = false) PublicEventSort sort,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                               @RequestParam(defaultValue = "10") @PositiveOrZero Integer size) {
-        return eventService.getEventsPublic(text, categories, users, paid, rangeStart, rangeEnd,
-                onlyAvailable, sort, from, size);
+                                               @RequestParam(defaultValue = "10") @PositiveOrZero Integer size,
+                                               HttpServletRequest request) {
+        EventSearchFilterPublic filter = new EventSearchFilterPublic(text, categories, users, paid, rangeStart,
+                rangeEnd, onlyAvailable, sort);
+        return eventService.getEventsPublic(filter, from, size, request);
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEventPublicById(@PathVariable Long id) {
-        return eventService.getPublicEventById(id);
+    public EventFullDto getEventPublicById(@PathVariable Long id, HttpServletRequest request) {
+        return eventService.getPublicEventById(id, request);
     }
 }
