@@ -4,16 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.requests.ParticipationRequestDto;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.exception.ParticipationRequestException;
-import ru.practicum.mapper.requests.ParticipationRequestMapper;
+import ru.practicum.mapper.ParticipationRequestMapper;
 import ru.practicum.model.Event;
 import ru.practicum.model.EventState;
 import ru.practicum.model.ParticipationRequest;
 import ru.practicum.model.RequestStatus;
-import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UsersRepository;
+import ru.practicum.repository.event.EventRepository;
 
 import java.util.List;
 import java.util.Objects;
@@ -56,7 +56,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
                 new NotFoundException(String.format("Request with id=%s was not found", requestId)));
 
         if (!Objects.equals(request.getRequester().getId(), userId)) {
-            throw new ParticipationRequestException(
+            throw new ConflictException(
                     "Only the requester can cancel the request"
             );
         }
@@ -77,20 +77,21 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
 
     private void validateRequest(Event event, Long userId) {
         Integer eventParticipationLimit = event.getParticipantLimit();
-        long currentConfirmedRequests = requestRepository.countConfirmedRequestsByEventId(event.getId());
+        Long currentConfirmedRequests =
+                requestRepository.countByEventIdAndStatus(event.getId(), RequestStatus.CONFIRMED);
 
         if (Objects.equals(userId, event.getInitiator().getId())) {
-            throw new ParticipationRequestException(
+            throw new ConflictException(
                     "Event initiator cannot request participation in their own event"
             );
         }
         if (!EventState.PUBLISHED.equals(event.getEventState())) {
-            throw new ParticipationRequestException(
+            throw new ConflictException(
                     "Cannot participate in unpublished event. Current status: " + event.getEventState()
             );
         }
         if (eventParticipationLimit > 0 && currentConfirmedRequests >= eventParticipationLimit) {
-            throw new ParticipationRequestException(
+            throw new ConflictException(
                     String.format("Event participant limit has been reached. Limit: %d, Current: %d",
                             event.getParticipantLimit(), currentConfirmedRequests)
             );

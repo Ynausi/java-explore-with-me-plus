@@ -31,13 +31,13 @@ public class AdminCompilationController {
     @PatchMapping("/{compId}")
     public ResponseEntity<CompilationResponse> update(@Valid @RequestBody UpdateCompilationRequest compilationRequest,
                                                       @PathVariable("compId") Long compId) {
-        log.info("Update compilation with id: {}",compId);
-        return ResponseEntity.ok().body(compilationService.update(compilationRequest,compId));
+        log.info("Update compilation with id: {}", compId);
+        return ResponseEntity.ok().body(compilationService.update(compilationRequest, compId));
     }
 
     @DeleteMapping("/{compId}")
     public ResponseEntity<Void> delete(@PathVariable("compId") Long compId) {
-        log.info("Delete compilation with id: {}",compId);
+        log.info("Delete compilation with id: {}", compId);
         compilationService.delete(compId);
         return ResponseEntity.noContent().build();
     }

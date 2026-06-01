@@ -19,7 +19,7 @@ public class EventFullDto {
 
     private String annotation;
     private CategoryResponse category;
-    private Integer confirmedRequests;
+    private Long confirmedRequests;
 
     @JsonFormat(pattern = DATE_TIME_FORMAT)
     private LocalDateTime createdOn;

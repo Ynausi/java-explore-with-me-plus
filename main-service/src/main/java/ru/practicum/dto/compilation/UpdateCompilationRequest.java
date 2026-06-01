@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
+
 import java.util.Set;
 
 @Getter
@@ -13,12 +13,10 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateCompilationRequest {
-
-    @UniqueElements
     private Set<Long> events;
 
     private Boolean pinned;
 
-    @Size(min = 1,max = 50)
+    @Size(min = 1, max = 50)
     private String title;
 }

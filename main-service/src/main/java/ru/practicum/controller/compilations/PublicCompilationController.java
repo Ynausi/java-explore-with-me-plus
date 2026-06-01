@@ -1,6 +1,7 @@
 package ru.practicum.controller.compilations;
 
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,10 @@ public class PublicCompilationController {
 
     @GetMapping
     public ResponseEntity<Collection<CompilationResponse>> getNeededCompilation(
-            @Valid @RequestBody GetCompilationListDto getCompilationListDto) {
-        return ResponseEntity.ok().body(compilationService.findNeededCompilation(getCompilationListDto));
+            @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+            @RequestParam(defaultValue = "10") @Positive Integer size,
+            @RequestParam(defaultValue = "false") Boolean pinned) {
+        return ResponseEntity.ok()
+                .body(compilationService.findNeededCompilation(new GetCompilationListDto(size, pinned, from)));
     }
 }
