@@ -1,5 +1,6 @@
 package ru.practicum.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,7 +15,11 @@ import java.io.StringWriter;
 @Slf4j
 @RestControllerAdvice("ru.practicum")
 public class ErrorHandler {
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+            IllegalArgumentException.class,
+            ConstraintViolationException.class
+    })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequestException(final Exception e) {
         return handleException(e, HttpStatus.BAD_REQUEST);

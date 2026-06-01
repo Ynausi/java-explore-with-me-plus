@@ -378,12 +378,13 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public List<EventShortDto> getEventsPublic(EventSearchFilterPublic filter,
                                                Integer from,
                                                Integer size,
                                                HttpServletRequest request) {
 
-        statsClient.hit(new HitRequestDto("main-service", request.getRequestURI(), request.getRemoteAddr(),
+        statsClient.hit(new HitRequestDto("ewm-main-service", request.getRequestURI(), request.getRemoteAddr(),
                 LocalDateTime.now()));
 
         int page = from / size;
@@ -416,7 +417,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие с id - " + eventId + " не найдено");
         }
 
-        statsClient.hit(new HitRequestDto("main-service", request.getRequestURI(), request.getRemoteAddr(),
+        statsClient.hit(new HitRequestDto("ewm-main-service", request.getRequestURI(), request.getRemoteAddr(),
                 LocalDateTime.now()));
 
         Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
