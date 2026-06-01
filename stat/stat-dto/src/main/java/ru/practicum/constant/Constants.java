@@ -1,8 +1,9 @@
 package ru.practicum.constant;
 
-import lombok.experimental.UtilityClass;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-@UtilityClass
-public class Constants {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Constants {
     public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 }
