@@ -26,6 +26,10 @@ public class StatsServiceImpl implements StatsService {
                                        LocalDateTime end,
                                        List<String> uris,
                                        Boolean unique) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Дата и время начала не может быть позже даты и времени окончания");
+        }
+
         List<String> urisParam = (uris == null || uris.isEmpty()) ? null : uris;
 
         List<StatsViewProjection> statsViewProjections = Boolean.TRUE.equals(unique) ?
