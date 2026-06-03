@@ -9,12 +9,10 @@ import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.model.Event;
 import ru.practicum.model.Location;
 
-import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
-
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class, UserMapper.class})
 public interface EventMapper {
 
-    @Mapping(target = "eventDate", source = "eventDate", dateFormat = DATE_TIME_FORMAT)
+    @Mapping(target = "eventDate", source = "eventDate")
     EventShortDto toEventShortDto(Event event);
 
     @Mapping(target = "category", ignore = true)
