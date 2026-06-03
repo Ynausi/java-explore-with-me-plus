@@ -12,7 +12,6 @@ import ru.practicum.storage.HitRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,6 +25,11 @@ public class StatsServiceImpl implements StatsService {
                                        LocalDateTime end,
                                        List<String> uris,
                                        Boolean unique) {
+
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("Дата и время начала не может быть позже даты и времени окончания");
+        }
+
         List<Hit> hits;
 
         if (uris != null && !uris.isEmpty()) {
@@ -34,44 +38,69 @@ public class StatsServiceImpl implements StatsService {
             hits = hitRepository.findByTimestampBetween(start, end);
         }
 
+        Map<String, ArrayList<Hit>> appsAndHitsMap = new HashMap<>();
+
+        for (Hit hit : hits) {
+            appsAndHitsMap.computeIfAbsent(hit.getApp(), k -> new ArrayList<>());
+            appsAndHitsMap.get(hit.getApp()).add(hit);
+        }
+
         List<StatsViewDto> statsViewDtos = new ArrayList<>();
 
-        Map<String, List<Hit>> appHits = hits.stream()
-                .collect(Collectors.groupingBy(Hit::getApp));
+        if (unique) {
+            for (Map.Entry<String, ArrayList<Hit>> appsAndHitsEntry : appsAndHitsMap.entrySet()) {
+                Map<String, Long> urisHitsCountMap = new HashMap<>();
+                Map<String, ArrayList<String>> urisAndIpsMap = new HashMap<>();
 
-        if (Boolean.TRUE.equals(unique)) {
-            for (var appHitEntry : appHits.entrySet()) {
-                Map<String, Set<String>> uriUniqueIPs = appHitEntry.getValue()
-                        .stream()
-                        .collect(Collectors.groupingBy(
-                                Hit::getUri,
-                                Collectors.mapping(Hit::getIp, Collectors.toSet())
-                        ));
+                for (Hit hit : appsAndHitsEntry.getValue()) {
+                    urisHitsCountMap.computeIfAbsent(hit.getUri(), k -> 0L);
+                    urisAndIpsMap.computeIfAbsent(hit.getUri(), k -> new ArrayList<>());
+                    if (!urisAndIpsMap.get(hit.getUri()).contains(hit.getIp())) {
+                        urisAndIpsMap.get(hit.getUri()).add(hit.getIp());
+                        urisHitsCountMap.put(hit.getUri(), urisHitsCountMap.get(hit.getUri()) + 1);
+                    }
+                }
 
-                uriUniqueIPs.forEach((key, value) ->
-                        statsViewDtos.add(makeStatsDto(key, appHitEntry.getKey(), value.size())));
+                for (Map.Entry<String, Long> uriHitsCountEntry : urisHitsCountMap.entrySet()) {
+                    StatsViewDto statsViewDto = new StatsViewDto();
+
+                    statsViewDto.setUri(uriHitsCountEntry.getKey());
+                    statsViewDto.setApp(appsAndHitsEntry.getKey());
+                    statsViewDto.setHits(uriHitsCountEntry.getValue());
+
+                    statsViewDtos.add(statsViewDto);
+                }
             }
-        } else {
-            for (var appHitEntry : appHits.entrySet()) {
-                Map<String, List<String>> uriIPs = appHitEntry.getValue()
-                        .stream()
-                        .collect(Collectors.groupingBy(
-                                Hit::getUri,
-                                Collectors.mapping(Hit::getIp, Collectors.toList())
-                        ));
 
-                uriIPs.forEach((key, value) ->
-                        statsViewDtos.add(makeStatsDto(key, appHitEntry.getKey(), value.size())));
+            List<StatsViewDto> statsViewDtosListSorted = statsViewDtos.stream()
+                    .sorted(Comparator.comparing(StatsViewDto::getHits).reversed())
+                    .toList();
+
+            return statsViewDtosListSorted;
+        }
+
+        for (Map.Entry<String, ArrayList<Hit>> appsAndHitsEntry : appsAndHitsMap.entrySet()) {
+            Map<String, Long> urisHitsCountMap = new HashMap<>();
+
+            for (Hit hit : appsAndHitsEntry.getValue()) {
+                urisHitsCountMap.computeIfAbsent(hit.getUri(), k -> 0L);
+                urisHitsCountMap.put(hit.getUri(), urisHitsCountMap.get(hit.getUri()) + 1);
+            }
+
+            for (Map.Entry<String, Long> uriHitsCountEntry : urisHitsCountMap.entrySet()) {
+                StatsViewDto statsViewDto = new StatsViewDto();
+
+                statsViewDto.setUri(uriHitsCountEntry.getKey());
+                statsViewDto.setApp(appsAndHitsEntry.getKey());
+                statsViewDto.setHits(uriHitsCountEntry.getValue());
+
+                statsViewDtos.add(statsViewDto);
             }
         }
 
         return statsViewDtos.stream()
                 .sorted(Comparator.comparing(StatsViewDto::getHits).reversed())
                 .toList();
-    }
-
-    public StatsViewDto makeStatsDto(String app, String uri, int hitsCount) {
-        return new StatsViewDto(app, uri, hitsCount);
     }
 
     @Override
