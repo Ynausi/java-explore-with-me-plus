@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.HitRequestDto;
 import ru.practicum.dto.StatsViewDto;
+import ru.practicum.dto.StatsViewProjection;
 import ru.practicum.mapper.HitMapper;
 import ru.practicum.model.Hit;
 import ru.practicum.storage.HitRepository;
@@ -25,81 +26,18 @@ public class StatsServiceImpl implements StatsService {
                                        LocalDateTime end,
                                        List<String> uris,
                                        Boolean unique) {
-
         if (start.isAfter(end)) {
             throw new IllegalArgumentException("Дата и время начала не может быть позже даты и времени окончания");
         }
 
-        List<Hit> hits;
+        List<String> urisParam = (uris == null || uris.isEmpty()) ? null : uris;
 
-        if (uris != null && !uris.isEmpty()) {
-            hits = hitRepository.findByTimestampBetweenAndUriIn(start, end, uris);
-        } else {
-            hits = hitRepository.findByTimestampBetween(start, end);
-        }
+        List<StatsViewProjection> statsViewProjections = Boolean.TRUE.equals(unique) ?
+                hitRepository.findUniqueStatsViewProjections(start, end, urisParam) :
+                hitRepository.findStatsViewProjections(start, end, urisParam);
 
-        Map<String, ArrayList<Hit>> appsAndHitsMap = new HashMap<>();
-
-        for (Hit hit : hits) {
-            appsAndHitsMap.computeIfAbsent(hit.getApp(), k -> new ArrayList<>());
-            appsAndHitsMap.get(hit.getApp()).add(hit);
-        }
-
-        List<StatsViewDto> statsViewDtos = new ArrayList<>();
-
-        if (unique) {
-            for (Map.Entry<String, ArrayList<Hit>> appsAndHitsEntry : appsAndHitsMap.entrySet()) {
-                Map<String, Long> urisHitsCountMap = new HashMap<>();
-                Map<String, ArrayList<String>> urisAndIpsMap = new HashMap<>();
-
-                for (Hit hit : appsAndHitsEntry.getValue()) {
-                    urisHitsCountMap.computeIfAbsent(hit.getUri(), k -> 0L);
-                    urisAndIpsMap.computeIfAbsent(hit.getUri(), k -> new ArrayList<>());
-                    if (!urisAndIpsMap.get(hit.getUri()).contains(hit.getIp())) {
-                        urisAndIpsMap.get(hit.getUri()).add(hit.getIp());
-                        urisHitsCountMap.put(hit.getUri(), urisHitsCountMap.get(hit.getUri()) + 1);
-                    }
-                }
-
-                for (Map.Entry<String, Long> uriHitsCountEntry : urisHitsCountMap.entrySet()) {
-                    StatsViewDto statsViewDto = new StatsViewDto();
-
-                    statsViewDto.setUri(uriHitsCountEntry.getKey());
-                    statsViewDto.setApp(appsAndHitsEntry.getKey());
-                    statsViewDto.setHits(uriHitsCountEntry.getValue());
-
-                    statsViewDtos.add(statsViewDto);
-                }
-            }
-
-            List<StatsViewDto> statsViewDtosListSorted = statsViewDtos.stream()
-                    .sorted(Comparator.comparing(StatsViewDto::getHits).reversed())
-                    .toList();
-
-            return statsViewDtosListSorted;
-        }
-
-        for (Map.Entry<String, ArrayList<Hit>> appsAndHitsEntry : appsAndHitsMap.entrySet()) {
-            Map<String, Long> urisHitsCountMap = new HashMap<>();
-
-            for (Hit hit : appsAndHitsEntry.getValue()) {
-                urisHitsCountMap.computeIfAbsent(hit.getUri(), k -> 0L);
-                urisHitsCountMap.put(hit.getUri(), urisHitsCountMap.get(hit.getUri()) + 1);
-            }
-
-            for (Map.Entry<String, Long> uriHitsCountEntry : urisHitsCountMap.entrySet()) {
-                StatsViewDto statsViewDto = new StatsViewDto();
-
-                statsViewDto.setUri(uriHitsCountEntry.getKey());
-                statsViewDto.setApp(appsAndHitsEntry.getKey());
-                statsViewDto.setHits(uriHitsCountEntry.getValue());
-
-                statsViewDtos.add(statsViewDto);
-            }
-        }
-
-        return statsViewDtos.stream()
-                .sorted(Comparator.comparing(StatsViewDto::getHits).reversed())
+        return statsViewProjections.stream()
+                .map(projection -> new StatsViewDto(projection.getApp(), projection.getUri(), projection.getHits()))
                 .toList();
     }
 

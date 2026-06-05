@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ru.practicum.constant.Constants.DATE_TIME_FORMAT;
 import static ru.practicum.model.EventState.PUBLISHED;
 
 @Service
@@ -42,7 +41,6 @@ import static ru.practicum.model.EventState.PUBLISHED;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT);
 
     private final ParticipationRequestRepository requestRepository;
     private final ParticipationRequestMapper requestMapper;
@@ -51,6 +49,9 @@ public class EventServiceImpl implements EventService {
     private final UsersRepository usersRepository;
     private final StatsClient statsClient;
     private final EventMapper eventMapper;
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     @Override
     public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {

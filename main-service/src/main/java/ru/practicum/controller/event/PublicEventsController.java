@@ -4,9 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.constant.Constants;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventSearchFilterPublic;
 import ru.practicum.dto.event.EventShortDto;
@@ -28,12 +26,8 @@ public class PublicEventsController {
                                                @RequestParam(required = false) List<@Positive Long> categories,
                                                @RequestParam(required = false) List<@Positive Long> users,
                                                @RequestParam(required = false) Boolean paid,
-                                               @RequestParam(required = false)
-                                               @DateTimeFormat(pattern = Constants.DATE_TIME_FORMAT)
-                                               LocalDateTime rangeStart,
-                                               @RequestParam(required = false)
-                                               @DateTimeFormat(pattern = Constants.DATE_TIME_FORMAT)
-                                               LocalDateTime rangeEnd,
+                                               @RequestParam(required = false) LocalDateTime rangeStart,
+                                               @RequestParam(required = false) LocalDateTime rangeEnd,
                                                @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                @RequestParam(required = false) PublicEventSort sort,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
