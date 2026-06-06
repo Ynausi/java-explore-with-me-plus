@@ -61,6 +61,9 @@ public class Event {
     @Column(nullable = false)
     private EventState eventState;
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<EventReaction> eventReactions = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_on", nullable = false, updatable = false)
     private LocalDateTime createdOn;
