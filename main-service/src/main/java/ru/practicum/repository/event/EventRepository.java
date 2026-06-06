@@ -19,4 +19,10 @@ public interface EventRepository extends JpaRepository<Event, Long>, EventQueryd
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
     Boolean existsByCategoryId(Long categoryId);
+
+    @Query("SELECT e FROM Event e " +
+            "JOIN e.eventReactions r " +
+            "WHERE r.reactor.id = :userId " +
+            "AND r.reactionType = 'LIKE'")
+    List<Event> findFavoriteEvents(@Param("userId") Long userId);
 }
