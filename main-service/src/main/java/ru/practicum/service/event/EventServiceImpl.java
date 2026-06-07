@@ -115,11 +115,13 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Событие с id - " + eventId + " не найдено"));
 
         Map<Long, Long> viewsMap = getViewsMap(List.of(eventId));
+        Map<Long, Integer> ratingsMap = getRatingsMap(List.of(eventId));
 
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         eventFullDto.setViews(viewsMap.getOrDefault(eventId, 0L));
         eventFullDto.setConfirmedRequests(confirmedRequests);
+        eventFullDto.setRating(ratingsMap.getOrDefault(eventId, 0));
         return eventFullDto;
     }
 
@@ -348,30 +350,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
-    public EventReactionDto addLikeEvent(Long userId, Long eventId) {
-        return addEventReaction(userId, eventId, ReactionType.LIKE);
-    }
-
-    @Override
-    @Transactional
-    public EventReactionDto addDislikeEvent(Long userId, Long eventId) {
-        return addEventReaction(userId, eventId, ReactionType.DISLIKE);
-    }
-
-    @Override
-    @Transactional
-    public void deleteLikeEvent(Long userId, Long eventId) {
-        deleteEventReaction(userId, eventId, ReactionType.LIKE);
-    }
-
-    @Override
-    @Transactional
-    public void deleteDislikeEvent(Long userId, Long eventId) {
-        deleteEventReaction(userId, eventId, ReactionType.DISLIKE);
-    }
-
-    @Override
     public List<EventFullDto> getFavoriteEvents(Long userId) {
         getUserByIdOrThrow(userId);
 
@@ -393,18 +371,25 @@ public class EventServiceImpl implements EventService {
         String start = earliestDateTime.format(FORMATTER);
         String end = LocalDateTime.now().format(FORMATTER);
 
-        List<StatsViewDto> stats = statsClient.getStats(start, end, uris, true);
-        if (stats == null || stats.isEmpty()) return Collections.emptyMap();
 
-        return stats.stream()
-                .collect(Collectors.toMap(
-                        statsDto -> {
-                            String uri = statsDto.getUri();
-                            return Long.parseLong(uri.substring(uri.lastIndexOf("/") + 1));
-                        },
-                        StatsViewDto::getHits,
-                        (existing, replacement) -> existing
-                ));
+        try {
+            List<StatsViewDto> stats = statsClient.getStats(start, end, uris, true);
+
+            if (stats == null || stats.isEmpty()) return Collections.emptyMap();
+
+            return stats.stream()
+                    .collect(Collectors.toMap(
+                            statsDto -> {
+                                String uri = statsDto.getUri();
+                                return Long.parseLong(uri.substring(uri.lastIndexOf("/") + 1));
+                            },
+                            StatsViewDto::getHits,
+                            (existing, replacement) -> existing
+                    ));
+        } catch (Exception e) {
+            log.warn("Stats service is not available, returning empty views map");
+            return Collections.emptyMap();
+        }
     }
 
     private Map<Long, Long> getConfirmedRequestsMap(List<Long> eventIds) {
@@ -482,58 +467,5 @@ public class EventServiceImpl implements EventService {
 
     private Event getEventByIdOrThrow(Long eventId) {
         return eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие с id - " + eventId + " не найдено"));
-    }
-
-    private EventReactionDto addEventReaction(Long userId,
-                                              Long eventId,
-                                              ReactionType reactionType) {
-        getUserByIdOrThrow(userId);
-        getEventByIdOrThrow(eventId);
-
-        Optional<EventReaction> existingReaction = eventReactionRepository.findByReactorIdAndEventId(userId, eventId);
-
-        validateUserParticipant(userId, eventId);
-
-        EventReaction reaction;
-        if (existingReaction.isPresent()) {
-            reaction = existingReaction.get();
-
-            if (reaction.getReactionType().equals(reactionType)) {
-                throw new ConflictException("Already reacted this event");
-            }
-
-            reaction.setReactionType(reactionType);
-            reaction.setUpdatedAt(LocalDateTime.now());
-
-        } else {
-            EventReaction newReaction = eventMapper.toReaction(userId, eventId, reactionType);
-            reaction = eventReactionRepository.save(newReaction);
-        }
-
-
-        return eventMapper.toReactionDto(reaction);
-    }
-
-    private void deleteEventReaction(Long userId, Long eventId, ReactionType reactionType) {
-        getUserByIdOrThrow(userId);
-        getEventByIdOrThrow(eventId);
-
-        EventReaction reaction = eventReactionRepository.findByReactorIdAndEventId(userId, eventId)
-                .filter(r -> r.getReactionType().equals(reactionType))
-                .orElseThrow(() -> new NotFoundException(
-                        String.format("Reaction %s not found for this event", reactionType)
-                ));
-
-        eventReactionRepository.delete(reaction);
-    }
-
-    private void validateUserParticipant(Long userId, Long eventId) {
-        boolean isParticipant = requestRepository.existsByRequesterIdAndEventIdAndStatus(
-                userId, eventId, RequestStatus.CONFIRMED
-        );
-
-        if (!isParticipant) {
-            throw new BadRequestException("Only participants can react to events");
-        }
     }
 }

@@ -34,13 +34,5 @@ public interface EventService {
 
     EventFullDto getPublicEventById(Long eventId, HttpServletRequest request);
 
-    EventReactionDto addLikeEvent(Long userId, Long eventId);
-
-    EventReactionDto addDislikeEvent(Long userId, Long eventId);
-
-    void deleteLikeEvent(Long userId, Long eventId);
-
-    void deleteDislikeEvent(Long userId, Long eventId);
-
     List<EventFullDto> getFavoriteEvents(Long userId);
 }
