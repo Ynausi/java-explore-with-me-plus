@@ -1,19 +1,27 @@
 package ru.practicum.service.event;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.event.EventShortDto;
+import ru.practicum.dto.users.UserRatingStatsDto;
+import ru.practicum.dto.users.UserShortDto;
 import ru.practicum.dto.event.EventReactionDto;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.EventMapper;
+import ru.practicum.mapper.UserMapper;
 import ru.practicum.model.*;
 import ru.practicum.repository.EventReactionRepository;
 import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UsersRepository;
 import ru.practicum.repository.event.EventRepository;
 
+import java.util.Collections;
+import java.util.List;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -22,11 +30,12 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class EventReactionServiceImpl implements EventReactionService {
 
-    private final EventReactionRepository eventReactionRepository;
+    private final EventReactionRepository reactionRepository;
     private final UsersRepository usersRepository;
     private final EventRepository eventRepository;
     private final ParticipationRequestRepository requestRepository;
     private final EventMapper eventMapper;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -52,13 +61,50 @@ public class EventReactionServiceImpl implements EventReactionService {
         deleteEventReaction(userId, eventId, ReactionType.DISLIKE);
     }
 
+
+    @Override
+    public List<UserShortDto> getUsersByReaction(Long eventId, ReactionType reactionType, Integer from, Integer size) {
+        if (!eventRepository.existsById(eventId)) {
+            throw new NotFoundException("Событие с id - " + eventId + " не найдено");
+        }
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        List<User> reactors = reactionRepository.findReactorsByEventIdAndReactionType(eventId, reactionType, pageable);
+
+        return reactors
+                .stream()
+                .map(userMapper::userToUserShortDto)
+                .toList();
+    }
+
+    @Override
+    public List<UserRatingStatsDto> getUsersRatingStats(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return Collections.emptyList();
+        return reactionRepository.getStatsByUserIds(userIds);
+    }
+
+    @Override
+    public List<EventShortDto> getTopEventsByRating(Integer limit, String order) {
+        List<Event> events;
+
+        if (order != null && order.equalsIgnoreCase("ASC")) {
+            events = eventRepository.findTopEventsByRatingAsc(limit);
+        } else {
+            events = eventRepository.findTopEventsByRatingDesc(limit);
+        }
+        return events.stream()
+                .map(eventMapper::toEventShortDto)
+                .toList();
+    }
+
     private EventReactionDto addEventReaction(Long userId,
                                               Long eventId,
                                               ReactionType reactionType) {
         getUserByIdOrThrow(userId);
         getEventByIdOrThrow(eventId);
 
-        Optional<EventReaction> existingReaction = eventReactionRepository.findByReactorIdAndEventId(userId, eventId);
+        Optional<EventReaction> existingReaction = reactionRepository.findByReactorIdAndEventId(userId, eventId);
 
         validateUserParticipant(userId, eventId);
 
@@ -75,7 +121,7 @@ public class EventReactionServiceImpl implements EventReactionService {
 
         } else {
             EventReaction newReaction = eventMapper.toReaction(userId, eventId, reactionType);
-            reaction = eventReactionRepository.save(newReaction);
+            reaction = reactionRepository.save(newReaction);
         }
 
 
@@ -86,13 +132,13 @@ public class EventReactionServiceImpl implements EventReactionService {
         getUserByIdOrThrow(userId);
         getEventByIdOrThrow(eventId);
 
-        EventReaction reaction = eventReactionRepository.findByReactorIdAndEventId(userId, eventId)
+        EventReaction reaction = reactionRepository.findByReactorIdAndEventId(userId, eventId)
                 .filter(r -> r.getReactionType().equals(reactionType))
                 .orElseThrow(() -> new NotFoundException(
                         String.format("Reaction %s not found for this event", reactionType)
                 ));
 
-        eventReactionRepository.delete(reaction);
+        reactionRepository.delete(reaction);
     }
 
     private void validateUserParticipant(Long userId, Long eventId) {
