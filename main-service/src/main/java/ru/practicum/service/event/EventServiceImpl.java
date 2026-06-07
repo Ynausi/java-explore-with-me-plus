@@ -358,6 +358,19 @@ public class EventServiceImpl implements EventService {
         return enrichFullDtos(favoriteEvents);
     }
 
+    @Override
+    public List<EventShortDto> getTopEventsByRating(Integer limit, String order) {
+        List<Event> events;
+
+        if (order != null && order.equalsIgnoreCase("ASC")) {
+            events = eventRepository.findTopEventsByRatingAsc(limit);
+        } else {
+            events = eventRepository.findTopEventsByRatingDesc(limit);
+        }
+
+        return enrichShortDtos(events);
+    }
+
     private Map<Long, Long> getViewsMap(List<Long> eventIds) {
         if (eventIds == null || eventIds.isEmpty()) return Collections.emptyMap();
 
@@ -458,14 +471,23 @@ public class EventServiceImpl implements EventService {
     }
 
     private User getUserByIdOrThrow(Long userId) {
-        return usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь c id - " + userId + " не найден или недоступен"));
+        return usersRepository.findById(userId)
+                .orElseThrow(
+                        () -> new NotFoundException("Пользователь c id - " + userId + " не найден или недоступен")
+                );
     }
 
     private Category getCategoryByIdOrThrow(Long categoryId) {
-        return categoryRepository.findById(categoryId).orElseThrow(() -> new NotFoundException("Категория с id - " + categoryId + " не найдена"));
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(
+                        () -> new NotFoundException("Категория с id - " + categoryId + " не найдена")
+                );
     }
 
     private Event getEventByIdOrThrow(Long eventId) {
-        return eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие с id - " + eventId + " не найдено"));
+        return eventRepository.findById(eventId)
+                .orElseThrow(
+                        () -> new NotFoundException("Событие с id - " + eventId + " не найдено")
+                );
     }
 }

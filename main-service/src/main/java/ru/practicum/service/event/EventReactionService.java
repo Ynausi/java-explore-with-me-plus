@@ -20,7 +20,5 @@ public interface EventReactionService {
 
     List<UserRatingStatsDto> getUsersRatingStats(List<Long> userIds);
 
-    List<EventShortDto> getTopEventsByRating(Integer limit, String order);
-
     List<UserShortDto> getUsersByReaction(Long eventId, ReactionType reactionType, Integer from, Integer size);
 }

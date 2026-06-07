@@ -5,10 +5,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.dto.event.EventShortDto;
+import ru.practicum.dto.event.EventReactionDto;
 import ru.practicum.dto.users.UserRatingStatsDto;
 import ru.practicum.dto.users.UserShortDto;
-import ru.practicum.dto.event.EventReactionDto;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
@@ -20,9 +19,9 @@ import ru.practicum.repository.ParticipationRequestRepository;
 import ru.practicum.repository.UsersRepository;
 import ru.practicum.repository.event.EventRepository;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -61,12 +60,9 @@ public class EventReactionServiceImpl implements EventReactionService {
         deleteEventReaction(userId, eventId, ReactionType.DISLIKE);
     }
 
-
     @Override
     public List<UserShortDto> getUsersByReaction(Long eventId, ReactionType reactionType, Integer from, Integer size) {
-        if (!eventRepository.existsById(eventId)) {
-            throw new NotFoundException("Событие с id - " + eventId + " не найдено");
-        }
+        getEventByIdOrThrow(eventId);
 
         Pageable pageable = PageRequest.of(from / size, size);
 
@@ -82,20 +78,6 @@ public class EventReactionServiceImpl implements EventReactionService {
     public List<UserRatingStatsDto> getUsersRatingStats(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) return Collections.emptyList();
         return reactionRepository.getStatsByUserIds(userIds);
-    }
-
-    @Override
-    public List<EventShortDto> getTopEventsByRating(Integer limit, String order) {
-        List<Event> events;
-
-        if (order != null && order.equalsIgnoreCase("ASC")) {
-            events = eventRepository.findTopEventsByRatingAsc(limit);
-        } else {
-            events = eventRepository.findTopEventsByRatingDesc(limit);
-        }
-        return events.stream()
-                .map(eventMapper::toEventShortDto)
-                .toList();
     }
 
     private EventReactionDto addEventReaction(Long userId,
@@ -152,10 +134,16 @@ public class EventReactionServiceImpl implements EventReactionService {
     }
 
     private User getUserByIdOrThrow(Long userId) {
-        return usersRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь c id - " + userId + " не найден или недоступен"));
+        return usersRepository.findById(userId)
+                .orElseThrow(
+                        () -> new NotFoundException("Пользователь c id - " + userId + " не найден или недоступен")
+                );
     }
 
     private Event getEventByIdOrThrow(Long eventId) {
-        return eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие с id - " + eventId + " не найдено"));
+        return eventRepository.findById(eventId)
+                .orElseThrow(
+                        () -> new NotFoundException("Событие с id - " + eventId + " не найдено")
+                );
     }
 }

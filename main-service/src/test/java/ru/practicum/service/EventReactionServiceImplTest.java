@@ -123,4 +123,7 @@ class EventReactionServiceImplTest extends BaseServiceTest {
 
         verify(eventReactionRepository, never()).save(any());
     }
+
+
+
 }
