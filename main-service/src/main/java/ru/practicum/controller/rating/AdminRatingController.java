@@ -20,7 +20,7 @@ public class AdminRatingController {
 
     private final EventReactionService eventReactionService;
 
-    @GetMapping
+    @GetMapping("/by-events")
     public List<UserShortDto> getUsersByReactionOrByEventIds(
             @RequestParam List<Long> eventIds,
             @RequestParam ReactionType reaction,
@@ -29,7 +29,7 @@ public class AdminRatingController {
         return eventReactionService.getUsersByReaction(eventIds, reaction, from, size);
     }
 
-    @GetMapping
+    @GetMapping("/by-users")
     public List<UserRatingStatsDto> getReactionsByUsersIds(@RequestParam List<Long> usersIds) {
         return eventReactionService.getUsersRatingStats(usersIds);
     }
