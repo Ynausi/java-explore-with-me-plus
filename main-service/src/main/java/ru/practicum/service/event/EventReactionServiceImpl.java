@@ -37,36 +37,10 @@ public class EventReactionServiceImpl implements EventReactionService {
     private final UserMapper userMapper;
 
     @Override
-    @Transactional
-    public EventReactionDto addLikeEvent(Long userId, Long eventId) {
-        return addEventReaction(userId, eventId, ReactionType.LIKE);
-    }
-
-    @Override
-    @Transactional
-    public EventReactionDto addDislikeEvent(Long userId, Long eventId) {
-        return addEventReaction(userId, eventId, ReactionType.DISLIKE);
-    }
-
-    @Override
-    @Transactional
-    public void deleteLikeEvent(Long userId, Long eventId) {
-        deleteEventReaction(userId, eventId, ReactionType.LIKE);
-    }
-
-    @Override
-    @Transactional
-    public void deleteDislikeEvent(Long userId, Long eventId) {
-        deleteEventReaction(userId, eventId, ReactionType.DISLIKE);
-    }
-
-    @Override
-    public List<UserShortDto> getUsersByReaction(Long eventId, ReactionType reactionType, Integer from, Integer size) {
-        getEventByIdOrThrow(eventId);
-
+    public List<UserShortDto> getUsersByReaction(List<Long> eventIds, ReactionType reactionType, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from / size, size);
 
-        List<User> reactors = reactionRepository.findReactorsByEventIdAndReactionType(eventId, reactionType, pageable);
+        List<User> reactors = reactionRepository.findReactorsByEventIdAndReactionType(eventIds, reactionType, pageable);
 
         return reactors
                 .stream()
@@ -80,7 +54,9 @@ public class EventReactionServiceImpl implements EventReactionService {
         return reactionRepository.getStatsByUserIds(userIds);
     }
 
-    private EventReactionDto addEventReaction(Long userId,
+    @Override
+    @Transactional
+    public EventReactionDto addReaction(Long userId,
                                               Long eventId,
                                               ReactionType reactionType) {
         getUserByIdOrThrow(userId);
@@ -110,7 +86,9 @@ public class EventReactionServiceImpl implements EventReactionService {
         return eventMapper.toReactionDto(reaction);
     }
 
-    private void deleteEventReaction(Long userId, Long eventId, ReactionType reactionType) {
+    @Override
+    @Transactional
+    public void deleteReaction(Long userId, Long eventId, ReactionType reactionType) {
         getUserByIdOrThrow(userId);
         getEventByIdOrThrow(eventId);
 

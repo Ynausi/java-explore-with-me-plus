@@ -1,8 +1,13 @@
 package ru.practicum.controller.rating;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.Event;
+import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.dto.event.EventReactionDto;
+import ru.practicum.model.ReactionType;
+import ru.practicum.service.event.EventReactionService;
+import ru.practicum.service.event.EventService;
 
 import java.util.List;
 
@@ -10,21 +15,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PrivateRatingController {
 
+    private final EventReactionService eventReactionService;
+    private final EventService eventService;
+
     @PostMapping("{userId}/ratings/{eventId}/{reaction}")
-    public Event saveReaction(@PathVariable Long eventId,
-                              @PathVariable Long userId,
-                              @PathVariable String reaction) {
-        return null;
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventReactionDto saveReaction(@PathVariable Long eventId,
+                                         @PathVariable Long userId,
+                                         @PathVariable ReactionType reaction) {
+        return eventReactionService.addReaction(userId, eventId, reaction);
     }
 
-    @DeleteMapping("{userId}/ratings/{eventId}")
+    @DeleteMapping("{userId}/ratings/{eventId}/{reaction}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteReaction(@PathVariable Long eventId,
-                               @PathVariable Long userId) {
-
+                               @PathVariable Long userId,
+                               @PathVariable ReactionType reaction) {
+        eventReactionService.deleteReaction(userId, eventId, reaction);
     }
 
     @GetMapping("{userId}/ratings")
-    public List<Event> getEventsUserLiked(@PathVariable Long userId) {
-        return null;
+    public List<EventFullDto> getEventsUserLiked(@PathVariable Long userId) {
+        return eventService.getFavoriteEvents(userId);
     }
 }

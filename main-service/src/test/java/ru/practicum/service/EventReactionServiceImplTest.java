@@ -19,8 +19,7 @@ import ru.practicum.repository.UsersRepository;
 import ru.practicum.repository.event.EventRepository;
 import ru.practicum.service.event.EventReactionServiceImpl;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +60,7 @@ class EventReactionServiceImplTest extends BaseServiceTest {
         event = makeEvent(eventId, initiator, 1L);
 
         reaction = makeReaction(1L, user, event, typeEntity);
+        reaction.setUpdatedAt(LocalDateTime.now());
 
         expectedDto = new EventReactionDto();
         expectedDto.setReactionType(typeDto);
@@ -70,10 +70,10 @@ class EventReactionServiceImplTest extends BaseServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "LIKE, addLikeEvent",
-            "DISLIKE, addDislikeEvent"
+            "LIKE",
+            "DISLIKE"
     })
-    void test_addReaction_shouldSuccess(ReactionType reactionType, String methodName) throws Exception {
+    void test_addReaction_shouldSuccess(ReactionType reactionType) {
         Long userId = 1L;
         Long eventId = 1L;
 
@@ -86,14 +86,12 @@ class EventReactionServiceImplTest extends BaseServiceTest {
         when(requestRepository.existsByRequesterIdAndEventIdAndStatus(
                 userId, eventId, RequestStatus.CONFIRMED))
                 .thenReturn(true);
-
-        when(eventMapper.toReaction(eq(userId), eq(eventId), any(ReactionType.class)))
+        when(eventMapper.toReaction(eq(userId), eq(eventId), eq(reactionType)))
                 .thenReturn(reaction);
         when(eventReactionRepository.save(any(EventReaction.class))).thenReturn(reaction);
         when(eventMapper.toReactionDto(any(EventReaction.class))).thenReturn(expectedDto);
 
-        Method method = eventReactionService.getClass().getMethod(methodName, Long.class, Long.class);
-        EventReactionDto result = (EventReactionDto) method.invoke(eventReactionService, userId, eventId);
+        EventReactionDto result = eventReactionService.addReaction(userId, eventId, reactionType);
 
         assertThat(result).isNotNull();
         assertThat(result.getReactionType()).isEqualTo(reactionType);
@@ -105,10 +103,10 @@ class EventReactionServiceImplTest extends BaseServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "addLikeEvent",
-            "addDislikeEvent"
+            "LIKE",
+            "DISLIKE"
     })
-    void test_addReaction_whenUserNotParticipant_shouldThrowException(String methodName) throws Exception {
+    void test_addReaction_whenUserNotParticipant_shouldThrowException(ReactionType reactionType) {
         Long userId = 1L;
         Long eventId = 1L;
 
@@ -118,230 +116,178 @@ class EventReactionServiceImplTest extends BaseServiceTest {
                 userId, eventId, RequestStatus.CONFIRMED))
                 .thenReturn(false);
 
-        Method method = eventReactionService.getClass().getMethod(methodName, Long.class, Long.class);
-
-        InvocationTargetException exception = assertThrows(InvocationTargetException.class,
-                () -> method.invoke(eventReactionService, userId, eventId));
-
-        assertThat(exception.getCause()).isInstanceOf(BadRequestException.class);
+        assertThrows(BadRequestException.class,
+                () -> eventReactionService.addReaction(userId, eventId, reactionType));
 
         verify(eventReactionRepository, never()).save(any());
     }
 
     @Test
-    void test_addLikeEvent_whenExistsDislike_shouldChangeToLike() {
+    void test_addReaction_whenExistsDifferentReaction_shouldUpdate() {
         Long userId = 1L;
         Long eventId = 1L;
+        ReactionType oldType = ReactionType.DISLIKE;
+        ReactionType newType = ReactionType.LIKE;
 
-        prepareData(userId, eventId, ReactionType.DISLIKE, ReactionType.LIKE);
+        prepareData(userId, eventId, oldType, newType);
 
         when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-
         when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
                 .thenReturn(Optional.of(reaction));
         when(requestRepository.existsByRequesterIdAndEventIdAndStatus(
                 userId, eventId, RequestStatus.CONFIRMED))
                 .thenReturn(true);
-
         when(eventMapper.toReactionDto(any(EventReaction.class))).thenReturn(expectedDto);
 
-        EventReactionDto result = eventReactionService.addLikeEvent(userId, eventId);
+        EventReactionDto result = eventReactionService.addReaction(userId, eventId, newType);
 
         assertThat(result).isNotNull();
-        assertThat(result.getReactionType()).isEqualTo(ReactionType.LIKE);
+        assertThat(result.getReactionType()).isEqualTo(newType);
+
+        verify(eventReactionRepository, never()).save(any());
     }
 
     @Test
-    void test_deleteDislikeEvent_shouldSuccess() {
+    void test_addReaction_whenSameReactionExists_shouldThrowConflictException() {
+        Long userId = 1L;
+        Long eventId = 1L;
+        ReactionType reactionType = ReactionType.LIKE;
+
+        prepareData(userId, eventId, reactionType, reactionType);
+
+        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(requestRepository.existsByRequesterIdAndEventIdAndStatus(
+                userId, eventId, RequestStatus.CONFIRMED))
+                .thenReturn(true);
+        when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
+                .thenReturn(Optional.of(reaction));
+
+        ConflictException exception = assertThrows(ConflictException.class,
+                () -> eventReactionService.addReaction(userId, eventId, reactionType));
+
+        assertThat(exception.getMessage()).isEqualTo("Already reacted this event");
+        verify(eventReactionRepository, never()).save(any(EventReaction.class));
+        verify(eventMapper, never()).toReactionDto(any(EventReaction.class));
+    }
+
+    @Test
+    void test_addReaction_whenUserNotFound_shouldThrowNotFoundException() {
+        Long userId = 999L;
+        Long eventId = 1L;
+        ReactionType reactionType = ReactionType.LIKE;
+
+        when(usersRepository.findById(userId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                () -> eventReactionService.addReaction(userId, eventId, reactionType));
+
+        verify(eventReactionRepository, never()).findByReactorIdAndEventId(any(), any());
+        verify(eventReactionRepository, never()).save(any());
+    }
+
+    @Test
+    void test_addReaction_whenEventNotFound_shouldThrowNotFoundException() {
+        Long userId = 1L;
+        Long eventId = 999L;
+        ReactionType reactionType = ReactionType.LIKE;
+
+        when(usersRepository.findById(userId)).thenReturn(Optional.of(makeUniqueUser(userId)));
+        when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                () -> eventReactionService.addReaction(userId, eventId, reactionType));
+
+        verify(eventReactionRepository, never()).findByReactorIdAndEventId(any(), any());
+        verify(eventReactionRepository, never()).save(any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "LIKE",
+            "DISLIKE"
+    })
+    void test_deleteReaction_shouldSuccess(ReactionType reactionType) {
         Long userId = 1L;
         Long eventId = 1L;
 
-        prepareData(userId, eventId, ReactionType.DISLIKE, null);
+        prepareData(userId, eventId, reactionType, null);
 
         when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
                 .thenReturn(Optional.of(reaction));
 
-        eventReactionService.deleteDislikeEvent(userId, eventId);
+        eventReactionService.deleteReaction(userId, eventId, reactionType);
 
         verify(eventReactionRepository, times(1)).delete(reaction);
     }
 
     @Test
-    void test_deleteLikeEvent_shouldSuccess() {
+    void test_deleteReaction_whenNoReaction_shouldThrowNotFoundException() {
         Long userId = 1L;
         Long eventId = 1L;
-
-        prepareData(userId, eventId, ReactionType.LIKE, null);
-
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-        when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
-                .thenReturn(Optional.of(reaction));
-
-        eventReactionService.deleteLikeEvent(userId, eventId);
-
-        verify(eventReactionRepository, times(1)).delete(reaction);
-    }
-
-    @Test
-    void test_deleteLikeEvent_whenNoReaction_shouldThrowNotFoundException() {
-        Long userId = 1L;
-        Long eventId = 1L;
+        ReactionType reactionType = ReactionType.LIKE;
 
         when(usersRepository.findById(userId)).thenReturn(Optional.of(makeUniqueUser(userId)));
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(makeEvent(eventId, makeUniqueUser(2L), 1L)));
         when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
                 .thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class,
-                () -> eventReactionService.deleteLikeEvent(userId, eventId));
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> eventReactionService.deleteReaction(userId, eventId, reactionType));
 
+        assertThat(exception.getMessage()).contains("Reaction LIKE not found for this event");
         verify(eventReactionRepository, never()).delete(any());
     }
 
     @Test
-    void test_deleteLikeEvent_whenReactionTypeMismatch_shouldThrowNotFoundException() {
+    void test_deleteReaction_whenReactionTypeMismatch_shouldThrowNotFoundException() {
         Long userId = 1L;
         Long eventId = 1L;
+        ReactionType existingType = ReactionType.DISLIKE;
+        ReactionType deleteType = ReactionType.LIKE;
 
-        prepareData(userId, eventId, ReactionType.DISLIKE, null);
+        prepareData(userId, eventId, existingType, null);
 
         when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
                 .thenReturn(Optional.of(reaction));
 
-        assertThrows(NotFoundException.class,
-                () -> eventReactionService.deleteLikeEvent(userId, eventId));
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> eventReactionService.deleteReaction(userId, eventId, deleteType));
 
+        assertThat(exception.getMessage()).contains("Reaction LIKE not found for this event");
         verify(eventReactionRepository, never()).delete(any());
     }
 
     @Test
-    void test_addDislikeEvent_whenExistsLike_shouldChangeToDislike() {
-        Long userId = 1L;
-        Long eventId = 1L;
-
-        prepareData(userId, eventId, ReactionType.LIKE, ReactionType.DISLIKE);
-
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
-
-        when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
-                .thenReturn(Optional.of(reaction));
-        when(requestRepository.existsByRequesterIdAndEventIdAndStatus(
-                userId, eventId, RequestStatus.CONFIRMED))
-                .thenReturn(true);
-
-        when(eventMapper.toReactionDto(any(EventReaction.class))).thenReturn(expectedDto);
-
-        EventReactionDto result = eventReactionService.addDislikeEvent(userId, eventId);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getReactionType()).isEqualTo(ReactionType.DISLIKE);
-    }
-
-    @Test
-    void test_addLikeEvent_whenSameReactionExists_shouldThrowException() {
-        Long userId = 1L;
-        Long eventId = 1L;
-
-        prepareData(userId, eventId, ReactionType.LIKE, ReactionType.LIKE);
-
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(makeEvent(eventId, makeUniqueUser(2L), 1L)));
-        when(requestRepository.existsByRequesterIdAndEventIdAndStatus(
-                userId, eventId, RequestStatus.CONFIRMED))
-                .thenReturn(true);
-
-        when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
-                .thenReturn(Optional.of(reaction));
-
-        assertThrows(ConflictException.class,
-                () -> eventReactionService.addLikeEvent(userId, eventId));
-
-        verify(eventReactionRepository, never()).save(any(EventReaction.class));
-        verify(eventMapper, never()).toReactionDto(any(EventReaction.class));
-    }
-
-    @Test
-    void test_addDislikeEvent_whenSameReactionExists_shouldThrowException() {
-        Long userId = 1L;
-        Long eventId = 1L;
-
-        prepareData(userId, eventId, ReactionType.DISLIKE, ReactionType.DISLIKE);
-
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.of(makeEvent(eventId, makeUniqueUser(2L), 1L)));
-        when(requestRepository.existsByRequesterIdAndEventIdAndStatus(
-                userId, eventId, RequestStatus.CONFIRMED))
-                .thenReturn(true);
-
-        when(eventReactionRepository.findByReactorIdAndEventId(userId, eventId))
-                .thenReturn(Optional.of(reaction));
-
-        assertThrows(ConflictException.class,
-                () -> eventReactionService.addDislikeEvent(userId, eventId));
-
-        verify(eventReactionRepository, never()).save(any(EventReaction.class));
-        verify(eventMapper, never()).toReactionDto(any(EventReaction.class));
-    }
-
-    @Test
-    void test_addLikeEvent_whenUserNotFound_shouldThrowNotFoundException() {
+    void test_deleteReaction_whenUserNotFound_shouldThrowNotFoundException() {
         Long userId = 999L;
         Long eventId = 1L;
+        ReactionType reactionType = ReactionType.LIKE;
 
         when(usersRepository.findById(userId)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
-                () -> eventReactionService.addLikeEvent(userId, eventId));
+                () -> eventReactionService.deleteReaction(userId, eventId, reactionType));
 
         verify(eventReactionRepository, never()).findByReactorIdAndEventId(any(), any());
-        verify(eventReactionRepository, never()).save(any());
     }
 
     @Test
-    void test_addLikeEvent_whenEventNotFound_shouldThrowNotFoundException() {
+    void test_deleteReaction_whenEventNotFound_shouldThrowNotFoundException() {
         Long userId = 1L;
         Long eventId = 999L;
+        ReactionType reactionType = ReactionType.LIKE;
 
         when(usersRepository.findById(userId)).thenReturn(Optional.of(makeUniqueUser(userId)));
         when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
-                () -> eventReactionService.addLikeEvent(userId, eventId));
-
-        verify(eventReactionRepository, never()).findByReactorIdAndEventId(any(), any());
-        verify(eventReactionRepository, never()).save(any());
-    }
-
-    @Test
-    void test_deleteLikeEvent_whenUserNotFound_shouldThrowNotFoundException() {
-        Long userId = 999L;
-        Long eventId = 1L;
-
-        when(usersRepository.findById(userId)).thenReturn(Optional.empty());
-
-        assertThrows(NotFoundException.class,
-                () -> eventReactionService.deleteLikeEvent(userId, eventId));
-
-        verify(eventReactionRepository, never()).findByReactorIdAndEventId(any(), any());
-    }
-
-    @Test
-    void test_deleteLikeEvent_whenEventNotFound_shouldThrowNotFoundException() {
-        Long userId = 1L;
-        Long eventId = 999L;
-
-        when(usersRepository.findById(userId)).thenReturn(Optional.of(makeUniqueUser(userId)));
-        when(eventRepository.findById(eventId)).thenReturn(Optional.empty());
-
-        assertThrows(NotFoundException.class,
-                () -> eventReactionService.deleteLikeEvent(userId, eventId));
+                () -> eventReactionService.deleteReaction(userId, eventId, reactionType));
 
         verify(eventReactionRepository, never()).findByReactorIdAndEventId(any(), any());
     }
