@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "ab751e75-4112-42a5-9b51-a78fdf1ea563",
     "name": "feature",
-    "description": "Коллекция Postman для проверки фичи рейтингов. Папки названы на английском, а сами запросы и проверки — на русском. Все запросы используют полный URL http://localhost:8080/... . Общий Pre-request Script находится на уровне коллекции feature: там лежат API, RandomUtils и инициализация rating-переменных перед первым запросом. Коллекцию нужно запускать через Runner сверху вниз.",
+    "description": "Коллекция Postman для проверки фичи рейтингов.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -452,12 +452,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingOutsiderUserId}}/ratings/{{ratingEventId}}/LIKE",
+              "raw": "http://localhost:8080/v1/{{ratingOutsiderUserId}}/ratings/{{ratingEventId}}/LIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingOutsiderUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -465,7 +466,7 @@
               ],
               "port": "8080"
             },
-            "description": "Путь в PrivateRatingController: /{userId}/ratings/{eventId}/{reaction}, без префикса /users."
+            "description": "Путь в PrivateRatingController: /v1/{userId}/ratings/{eventId}/{reaction}, с версионированием /v1."
           },
           "event": [
             {
@@ -489,12 +490,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/WOW",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/WOW",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -525,12 +527,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -564,12 +567,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/admin/ratings/by-events?eventIds={{ratingEventId}}&reaction=LIKE&from=0&size=10",
+              "raw": "http://localhost:8080/v1/admin/ratings/by-events?eventIds={{ratingEventId}}&reaction=LIKE&from=0&size=10",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "admin",
                 "ratings",
                 "by-events"
@@ -619,12 +623,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings"
               ],
@@ -655,12 +660,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -691,12 +697,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -729,12 +736,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingDislikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
+              "raw": "http://localhost:8080/v1/{{ratingDislikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingDislikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -767,12 +775,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings"
               ],
@@ -808,12 +817,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/admin/ratings/by-events?eventIds={{ratingEventId}}&reaction=DISLIKE&from=0&size=10",
+              "raw": "http://localhost:8080/v1/admin/ratings/by-events?eventIds={{ratingEventId}}&reaction=DISLIKE&from=0&size=10",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "admin",
                 "ratings",
                 "by-events"
@@ -865,12 +875,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/admin/ratings/by-users?usersIds={{ratingOwnerUserId}}",
+              "raw": "http://localhost:8080/v1/admin/ratings/by-users?usersIds={{ratingOwnerUserId}}",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "admin",
                 "ratings",
                 "by-users"
@@ -910,12 +921,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/ratings?sort=ASC&size=100",
+              "raw": "http://localhost:8080/v1/ratings?sort=ASC&size=100",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "ratings"
               ],
               "port": "8080",
@@ -962,12 +974,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -995,12 +1008,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -1031,12 +1045,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/admin/ratings/by-users?usersIds={{ratingOwnerUserId}}",
+              "raw": "http://localhost:8080/v1/admin/ratings/by-users?usersIds={{ratingOwnerUserId}}",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "admin",
                 "ratings",
                 "by-users"
@@ -1076,12 +1091,13 @@
             "method": "POST",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -1115,12 +1131,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings"
               ],
@@ -1151,12 +1168,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/ratings?sort=DESC&size=100",
+              "raw": "http://localhost:8080/v1/ratings?sort=DESC&size=100",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "ratings"
               ],
               "port": "8080",
@@ -1198,12 +1216,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
+              "raw": "http://localhost:8080/v1/{{ratingLikeUserId}}/ratings/{{ratingEventId}}/LIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingLikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -1231,12 +1250,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "http://localhost:8080/{{ratingDislikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
+              "raw": "http://localhost:8080/v1/{{ratingDislikeUserId}}/ratings/{{ratingEventId}}/DISLIKE",
               "protocol": "http",
               "host": [
                 "localhost"
               ],
               "path": [
+                "v1",
                 "{{ratingDislikeUserId}}",
                 "ratings",
                 "{{ratingEventId}}",
@@ -1367,6 +1387,31 @@
           "",
           "    async findUser(userId, verbose=null) {",
           "        return this.get('/admin/users?ids=' + userId, null, \"Ошибка при поиске пользователя по id\", verbose);",
+          "    }",
+          "",
+          "",
+          "    async addReaction(userId, eventId, reaction, verbose=null) {",
+          "        return this.post('/v1/' + userId + '/ratings/' + eventId + '/' + reaction, null, \"Ошибка при добавлении реакции на событие: \", verbose);",
+          "    }",
+          "",
+          "    async deleteReaction(userId, eventId, reaction, verbose=null) {",
+          "        return this.sendRequest('DELETE', '/v1/' + userId + '/ratings/' + eventId + '/' + reaction, null, \"Ошибка при удалении реакции на событие: \", verbose);",
+          "    }",
+          "",
+          "    async getFavoriteEvents(userId, verbose=null) {",
+          "        return this.get('/v1/' + userId + '/ratings', null, \"Ошибка при получении понравившихся событий: \", verbose);",
+          "    }",
+          "",
+          "    async getUsersByReaction(eventId, reaction, from=0, size=10, verbose=null) {",
+          "        return this.get('/v1/admin/ratings/by-events?eventIds=' + eventId + '&reaction=' + reaction + '&from=' + from + '&size=' + size, null, \"Ошибка при получении пользователей по реакции: \", verbose);",
+          "    }",
+          "",
+          "    async getUserRatingStats(userId, verbose=null) {",
+          "        return this.get('/v1/admin/ratings/by-users?usersIds=' + userId, null, \"Ошибка при получении статистики рейтинга пользователя: \", verbose);",
+          "    }",
+          "",
+          "    async getTopEventsByRating(sort='DESC', size=10, verbose=null) {",
+          "        return this.get('/v1/ratings?sort=' + sort + '&size=' + size, null, \"Ошибка при получении публичного рейтинга событий: \", verbose);",
           "    }",
           "",
           "    async post(path, body, errorText = \"Ошибка при выполнении post-запроса: \", verbose=null) {",
