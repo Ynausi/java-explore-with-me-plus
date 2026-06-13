@@ -12,13 +12,14 @@ import ru.practicum.service.event.EventService;
 import java.util.List;
 
 @RestController
+@RequestMapping("/v1/{userId}/ratings")
 @RequiredArgsConstructor
 public class PrivateRatingController {
 
     private final EventReactionService eventReactionService;
     private final EventService eventService;
 
-    @PostMapping("{userId}/ratings/{eventId}/{reaction}")
+    @PostMapping("/{eventId}/{reaction}")
     @ResponseStatus(HttpStatus.CREATED)
     public EventReactionDto saveReaction(@PathVariable Long eventId,
                                          @PathVariable Long userId,
@@ -26,7 +27,7 @@ public class PrivateRatingController {
         return eventReactionService.addReaction(userId, eventId, reaction);
     }
 
-    @DeleteMapping("{userId}/ratings/{eventId}/{reaction}")
+    @DeleteMapping("/{eventId}/{reaction}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteReaction(@PathVariable Long eventId,
                                @PathVariable Long userId,
@@ -34,7 +35,7 @@ public class PrivateRatingController {
         eventReactionService.deleteReaction(userId, eventId, reaction);
     }
 
-    @GetMapping("{userId}/ratings")
+    @GetMapping
     public List<EventFullDto> getEventsUserLiked(@PathVariable Long userId) {
         return eventService.getFavoriteEvents(userId);
     }
