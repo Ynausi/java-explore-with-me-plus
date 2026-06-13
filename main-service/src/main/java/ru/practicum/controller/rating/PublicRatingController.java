@@ -11,7 +11,7 @@ import ru.practicum.service.event.EventService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/ratings")
+@RequestMapping("/v1/ratings")
 @RequiredArgsConstructor
 public class PublicRatingController {
 
