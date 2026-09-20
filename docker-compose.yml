@@ -44,7 +44,7 @@ services:
     restart: on-failure
 
   ewm-service:
-    build: ./main-service
+    build: ./core/main-service
     container_name: ewm-service
     ports:
       - "8080:8080"
