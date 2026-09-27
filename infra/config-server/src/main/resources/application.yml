@@ -14,3 +14,4 @@ spring:
             - file:./infra/config-repo
             - file:./infra/config-repo/main-service
             - file:./infra/config-repo/stat-server
+            - file:./infra/config-repo/api-gateway

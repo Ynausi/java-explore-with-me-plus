@@ -10,13 +10,13 @@ import ru.practicum.service.requests.ParticipationRequestService;
 import java.util.List;
 
 @RestController
-@RequestMapping
+@RequestMapping("/users/{userId}/requests")
 @RequiredArgsConstructor
 public class ParticipationRequestController {
 
     private final ParticipationRequestService requestService;
 
-    @PostMapping("/users/{userId}/requests")
+    @PostMapping
     public ResponseEntity<ParticipationRequestDto> addParticipationRequest(
             @PathVariable Long userId,
             @RequestParam Long eventId) {
@@ -25,14 +25,14 @@ public class ParticipationRequestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newRequest);
     }
 
-    @PatchMapping("/users/{userId}/requests/{requestId}/cancel")
+    @PatchMapping("/{requestId}/cancel")
     public ResponseEntity<ParticipationRequestDto> cancelParticipationRequest(
             @PathVariable Long userId,
             @PathVariable Long requestId) {
         return ResponseEntity.ok(requestService.cancelParticipationRequest(userId, requestId));
     }
 
-    @GetMapping("/users/{userId}/requests")
+    @GetMapping
     public ResponseEntity<List<ParticipationRequestDto>> getCurrentUserRequests(
             @PathVariable Long userId) {
         return ResponseEntity.ok(requestService.getCurrentUserRequests(userId));
